@@ -636,6 +636,19 @@ public class GoogleGroupTarget implements GroupTarget {
                 GoogleGroupTarget.this.rateLimiter.rateLimitHit();
             }
 
+            if (diff instanceof Differences.MemberAdd &&
+                e.getErrors() != null &&
+                e.getErrors().size() == 1 &&
+                "duplicate".equals(e.getErrors().get(0).getReason())) {
+
+                // We already had this user.  Google's member listing often lags reality, so we'll treat this as a non-error.
+                appliedDiffs.add(diff);
+
+                logger.info("Caught 'duplicate user' error from Google.  No need to add this user: {}", e);
+
+                return;
+            }
+
             logger.info("Failed to apply diff: {}", diff);
             logger.info("Error from Google was: {}", e);
         }
