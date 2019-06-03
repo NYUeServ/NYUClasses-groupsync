@@ -204,12 +204,25 @@ public class Replicator extends Thread {
                 }
 
             } catch (Exception e) {
-                Monitoring.recordException(e);
+                if (isCriticalException(e)) {
+                    Monitoring.recordException(e);
+                }
 
                 logger.error("Caught an exception in replicator from {} to {}: {}",
                         source.getId(), target.getId(), e.getMessage(), e);
             }
         }
+    }
+
+
+    private boolean isCriticalException(Exception e) {
+        if (e.toString().indexOf("backendError") >= 0) {
+            // Google intermittently throws these and there's not much we can do
+            // about it.
+            return false;
+        }
+
+        return true;
     }
 
 }
