@@ -80,7 +80,20 @@ public class ReplicationState implements TargetStore {
                         delete.param(g.getName());
                         delete.executeUpdate();
 
+                        Set<String> seenUserIds = new HashSet<>();
+
                         for (Group.Membership m : g.getMembers()) {
+                            // Generally we expect our group target to return us
+                            // membership lists that are free of duplicates, but
+                            // sometimes we're disappointed.
+                            if (seenUserIds.contains(m.userId)) {
+                                logger.warn(String.format("Skipped userid '%s' in group '%s' with role '%s' because we've already seen this user.",
+                                                          m.userId, targetId, m.role.toString()));
+                                continue;
+                            } else {
+                                seenUserIds.add(m.userId);
+                            }
+
                             insert.clearParameters();
                             insert.param(targetId);
                             insert.param(g.getName());
