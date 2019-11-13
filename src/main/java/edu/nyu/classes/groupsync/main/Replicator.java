@@ -69,7 +69,7 @@ public class Replicator extends Thread {
 
                 GroupSet updatedGroups = source.updatedGroupsSince(lastSourceUpdateTime);
 
-                logger.debug("Groups from source {}: {}", source.getId(), updatedGroups);
+                logger.debug("Groups from source {}: {}", source.getId(), updatedGroups.summary());
 
                 // It's possible that we already synced some of these groups on
                 // a previous run, since the source update time is only bumped
@@ -139,7 +139,7 @@ public class Replicator extends Thread {
                     }
                 }
 
-                logger.debug("Groups from target {}: {}", target.getId(), groupsFromTarget);
+                logger.debug("Groups from target {}: {}", target.getId(), groupsFromTarget.summary());
 
                 target.createNewGroups(newGroups, state);
 

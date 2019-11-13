@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import java.util.stream.*;
+
 public class GroupSet implements Iterable<Group> {
 
     private HashMap<String, Group> groups = new HashMap<>();
@@ -52,5 +54,12 @@ public class GroupSet implements Iterable<Group> {
 
     public boolean isEmpty() {
         return groups.isEmpty();
+    }
+
+    public String summary() {
+        return groups.entrySet()
+            .stream()
+            .map(e -> String.format("%s (%d members)", e.getKey(), e.getValue().getMembers().size()))
+            .collect(Collectors.joining("; "));
     }
 }
