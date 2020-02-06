@@ -80,8 +80,17 @@ public class DBGroupSource implements GroupSource {
                     String email = rs.getString("email");
                     String role = mapRole(rs.getString("role"));
 
-                    Group group = result.get(groupName);
-                    group.addMembership(email, role);
+                    if (result.hasGroup(groupName)) {
+                        Group group = result.get(groupName);
+                        group.addMembership(email, role);
+                    } else {
+                        // This can happen if a membership row is added after we
+                        // pull our initial group list, and if our database
+                        // doesn't give us repeatable reads.  This should be
+                        // very rare.
+                        logger.warn(String.format("Got a row referencing group %s but that group wasn't in our set",
+                                                  groupName));
+                    }
                 }
 
                 return null;
