@@ -64,17 +64,17 @@
     <dependency>
       <groupId>com.google.api-client</groupId>
       <artifactId>google-api-client</artifactId>
-      <version>1.22.0</version>
+      <version>1.30.9</version>
     </dependency>
     <dependency>
       <groupId>com.google.apis</groupId>
       <artifactId>google-api-services-admin-directory</artifactId>
-      <version>directory_v1-rev80-1.22.0</version>
+      <version>directory_v1-rev118-1.25.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.apis</groupId>
       <artifactId>google-api-services-groupssettings</artifactId>
-      <version>v1-rev65-1.22.0</version>
+      <version>v1-rev82-1.25.0</version>
     </dependency>
     <dependency>
       <groupId>com.zaxxer</groupId>
