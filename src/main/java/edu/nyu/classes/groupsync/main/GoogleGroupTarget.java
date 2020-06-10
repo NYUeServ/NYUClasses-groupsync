@@ -204,6 +204,13 @@ public class GoogleGroupTarget implements GroupTarget {
     }
 
 
+    public void runMaintenance(long now, TargetStore state) {
+    }
+
+    public void prepareForGroupset(GroupSet groups, long now, TargetStore state) {
+    }
+
+
     private String domainKey(Group group) {
         return domainKey(group.getName());
     }
@@ -212,6 +219,11 @@ public class GoogleGroupTarget implements GroupTarget {
         return name + "@" + google.getDomain();
     }
 
+
+    public Collection<Differences.Difference> filterDiffs(Collection<Differences.Difference> diffs, TargetStore state) {
+        // FIXME: be clever
+        return diffs;
+    }
 
     public Collection<Differences.Difference> applyDiffs(Collection<Differences.Difference> diffs, TargetStore state) {
         List<Differences.Difference> appliedDiffs = new ArrayList<>();

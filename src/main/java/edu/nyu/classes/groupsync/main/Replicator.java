@@ -60,6 +60,8 @@ public class Replicator extends Thread {
             try {
                 long now = System.currentTimeMillis();
 
+                target.runMaintenance(now, state);
+
                 // Fetch the groups that were updated since we last checked
                 long lastSourceUpdateTime = state.lastUpdateForSource(source.getId());
 
@@ -70,6 +72,8 @@ public class Replicator extends Thread {
                 GroupSet updatedGroups = source.updatedGroupsSince(lastSourceUpdateTime);
 
                 logger.debug("Groups from source {}: {}", source.getId(), updatedGroups.summary());
+
+                target.prepareForGroupset(updatedGroups, now, state);
 
                 // It's possible that we already synced some of these groups on
                 // a previous run, since the source update time is only bumped
@@ -146,6 +150,8 @@ public class Replicator extends Thread {
                 Collection<Differences.Difference> diffs = new GroupSetDiffer().diff(groupsFromTarget, updatedGroups);
 
                 logger.debug("Calculated differences: {}", diffs);
+
+                diffs = target.filterDiffs(diffs, state);
 
                 Collection<Differences.Difference> appliedDiffs = target.applyDiffs(diffs, state);
 
