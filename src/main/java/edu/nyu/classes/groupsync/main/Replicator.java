@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,8 @@ public class Replicator extends Thread {
     }
 
     public void run() {
+        boolean firstRun = true;
+
         while (true) {
             try {
                 Thread.sleep(pollIntervalMs);
@@ -58,6 +61,13 @@ public class Replicator extends Thread {
             }
 
             try {
+                if (firstRun) {
+                    // If we got restarted, attempt to apply any group settings that were not yet applied.
+                    target.createNewGroups(Collections.emptyList(), state);
+                    firstRun = false;
+                }
+
+
                 long now = System.currentTimeMillis();
 
                 target.runMaintenance(now, state);
