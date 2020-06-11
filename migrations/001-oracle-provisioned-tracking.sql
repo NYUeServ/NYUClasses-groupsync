@@ -1,0 +1,1 @@
+CREATE TABLE groupsync_user_status (target_id varchar2(255), username varchar(255), status varchar(64), created_time NUMBER default 0, last_checked_time NUMBER default 0, primary key (target_id, username));

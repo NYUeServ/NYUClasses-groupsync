@@ -67,7 +67,6 @@ public class Replicator extends Thread {
                     firstRun = false;
                 }
 
-
                 long now = System.currentTimeMillis();
 
                 target.runMaintenance(now, state);
@@ -159,9 +158,9 @@ public class Replicator extends Thread {
 
                 Collection<Differences.Difference> diffs = new GroupSetDiffer().diff(groupsFromTarget, updatedGroups);
 
-                logger.debug("Calculated differences: {}", diffs);
-
                 diffs = target.filterDiffs(diffs, state);
+
+                logger.debug("Calculated differences: {}", diffs);
 
                 Collection<Differences.Difference> appliedDiffs = target.applyDiffs(diffs, state);
 

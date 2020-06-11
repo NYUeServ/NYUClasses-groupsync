@@ -1,8 +1,7 @@
 package edu.nyu.classes.groupsync.main;
 
 import com.zaxxer.hikari.HikariDataSource;
-import edu.nyu.classes.groupsync.api.GroupSource;
-import edu.nyu.classes.groupsync.api.GroupTarget;
+import edu.nyu.classes.groupsync.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +40,8 @@ public class Main {
 
         try {
             for (String set : config.replicationSets()) {
+                ReplicationState replicationState = new ReplicationState(replication_ds);
+
                 Config.Group sourceConfig = config.readGroup(set, "source");
                 Config.Group targetConfig = config.readGroup(set, "target");
 
@@ -77,18 +78,17 @@ public class Main {
                     }
 
                     target = new GoogleGroupTarget(targetConfig.getString("id"),
-                            Integer.valueOf(targetConfig.getString("batchSize", "50")),
-                            targetConfig.getString("groupDescription", "auto-created group"),
-                            rateLimiter,
-                            new GoogleClient(targetConfig.getString("domain"),
-                                    targetConfig.getString("oauth_user"),
-                                    targetConfig.getString("oauth_secret"),
-                                    targetConfig.getString("credentials_path")));
+                                                   Integer.valueOf(targetConfig.getString("batchSize", "50")),
+                                                   targetConfig.getString("groupDescription", "auto-created group"),
+                                                   rateLimiter,
+                                                   new GoogleClient(targetConfig.getString("domain"),
+                                                                    targetConfig.getString("oauth_user"),
+                                                                    targetConfig.getString("oauth_secret"),
+                                                                    targetConfig.getString("credentials_path")),
+                                                   (UserProvisionerState) replicationState);
                 } else {
                     throw new RuntimeException("Unknown target type: " + targetConfig.getString("type"));
                 }
-
-                ReplicationState replicationState = new ReplicationState(replication_ds);
 
                 replicators.add(new Replicator(Long.valueOf(config.getString(set + ".frequency_ms")), source, target, replicationState, config));
             }

@@ -58,6 +58,7 @@ public class GoogleClient {
         Set<String> result = new HashSet<>();
 
         result.add(DirectoryScopes.ADMIN_DIRECTORY_GROUP);
+        result.add(DirectoryScopes.ADMIN_DIRECTORY_USER_READONLY);
         result.addAll(GroupssettingsScopes.all());
 
         return result;

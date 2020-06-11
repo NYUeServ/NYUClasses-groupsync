@@ -13,12 +13,7 @@ import com.google.api.services.admin.directory.model.Member;
 import com.google.api.services.admin.directory.model.Members;
 import com.google.api.services.groupssettings.Groupssettings;
 import com.google.api.services.groupssettings.model.Groups;
-import edu.nyu.classes.groupsync.api.Differences;
-import edu.nyu.classes.groupsync.api.Group;
-import edu.nyu.classes.groupsync.api.GroupSet;
-import edu.nyu.classes.groupsync.api.GroupTarget;
-import edu.nyu.classes.groupsync.api.Role;
-import edu.nyu.classes.groupsync.api.TargetStore;
+import edu.nyu.classes.groupsync.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +26,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.function.Supplier;
 
 public class GoogleGroupTarget implements GroupTarget {
     private static Logger logger = LoggerFactory.getLogger(GoogleGroupTarget.class);
@@ -40,13 +38,20 @@ public class GoogleGroupTarget implements GroupTarget {
     private int requestsPerBatch;
     private String defaultGroupDescription;
     private RateLimiter rateLimiter;
+    private UserProvisionerState userProvisionerState;
 
-    public GoogleGroupTarget(String id, int requestsPerBatch, String defaultGroupDescription, RateLimiter rateLimiter, GoogleClient google) {
+    public GoogleGroupTarget(String id,
+                             int requestsPerBatch,
+                             String defaultGroupDescription,
+                             RateLimiter rateLimiter,
+                             GoogleClient google,
+                             UserProvisionerState userProvisionerState) {
         this.id = id;
         this.google = google;
         this.requestsPerBatch = requestsPerBatch;
         this.defaultGroupDescription = defaultGroupDescription;
         this.rateLimiter = rateLimiter;
+        this.userProvisionerState = userProvisionerState;
     }
 
     public String getId() {
@@ -205,11 +210,64 @@ public class GoogleGroupTarget implements GroupTarget {
 
 
     public void runMaintenance(long now, TargetStore state) {
+        try {
+            // Find our list of users that haven't been confirmed as provisioned yet.  Check Google to see if they've
+            // turned up since we last looked.
+            List<String> userIds = this.userProvisionerState.getUsersToCheck(getId(), (createdTime, lastCheckedTime) -> {
+                    long msSinceCreated = now - createdTime;
+                    long msSinceChecked = now - lastCheckedTime;
+
+                    // A user we've just added is checked right away
+                    if (lastCheckedTime == 0) {
+                        return true;
+                    } else if ((msSinceCreated < (48 * 60 * 60 * 1000)) && (msSinceChecked > (15 * 60 * 1000))) {
+                        // A user added in the last 48 hours is checked every 15 minutes
+                        return true;
+                    } else if ((msSinceCreated < (2 * 7 * 24 * 60 * 60 * 1000)) && (msSinceChecked > (60 * 60 * 1000))) {
+                        // A user added in the last two weeks is checked once an hour
+                        return true;
+                    } else if (msSinceChecked > (24 * 60 * 60 * 1000)) {
+                        // A user older than that is checked once a day
+                        return true;
+                    } else {
+                        return false;
+                    }
+                });
+
+            Directory directory = google.getDirectory();
+            Directory.Users users = directory.users();
+
+            LimitedBatchRequest batch = new LimitedBatchRequest(directory);
+
+            List<String> foundUsers = new ArrayList<>();
+            List<String> missingUsers = new ArrayList<>();
+
+            for (String userId : userIds) {
+                batch.queue(users.get(userId), new UserHandler(userId, foundUsers, missingUsers));
+            }
+
+            // populates foundUsers, missingUsers
+            batch.execute();
+
+            this.userProvisionerState.markUsersAsProvisioned(getId(), now, foundUsers);
+            this.userProvisionerState.markUsersAsPending(getId(), now, missingUsers);
+        } catch (Exception e) {
+            logger.error("Error while checking user states: {}", e);
+        }
     }
 
     public void prepareForGroupset(GroupSet groups, long now, TargetStore state) {
-    }
+        // Mark any new users as provision status "unchecked"
+        for (Group g : groups) {
+            Supplier<Stream<String>> userIds = () -> g.getMembers().stream().map(m -> m.userId);
 
+            // Add "pending" placeholders for all users
+            this.userProvisionerState.addPlaceholders(getId(), userIds.get().collect(Collectors.toList()));
+
+            // But non-managed users can be automatically assumed to be provisioned
+            this.userProvisionerState.markUsersAsProvisioned(getId(), now, userIds.get().filter(u -> !this.isGoogleManaged(u)).collect(Collectors.toList()));
+        }
+    }
 
     private String domainKey(Group group) {
         return domainKey(group.getName());
@@ -219,10 +277,27 @@ public class GoogleGroupTarget implements GroupTarget {
         return name + "@" + google.getDomain();
     }
 
+    private boolean isGoogleManaged(String email) {
+        return email.toLowerCase(Locale.ROOT).endsWith("@" + google.getDomain());
+    }
+
 
     public Collection<Differences.Difference> filterDiffs(Collection<Differences.Difference> diffs, TargetStore state) {
-        // FIXME: be clever
-        return diffs;
+        List<String> membersToCheck = new ArrayList<>();
+
+        for (Differences.Difference diff : diffs) {
+            if (!(diff instanceof Differences.MemberAdd)) {
+                continue;
+            }
+
+            membersToCheck.add(((Differences.MemberAdd) diff).userId);
+        }
+
+        Set<String> provisionedUsers = this.userProvisionerState.selectProvisionedUsers(getId(), membersToCheck);
+
+        return diffs.stream().filter(diff -> {
+                return !(diff instanceof Differences.MemberAdd) || provisionedUsers.contains(((Differences.MemberAdd) diff).userId);
+            }).collect(Collectors.toList());
     }
 
     public Collection<Differences.Difference> applyDiffs(Collection<Differences.Difference> diffs, TargetStore state) {
@@ -663,6 +738,34 @@ public class GoogleGroupTarget implements GroupTarget {
 
             logger.info("Failed to apply diff: {}", diff);
             logger.info("Error from Google was: {}", e);
+        }
+    }
+
+    private class UserHandler extends JsonBatchCallback<com.google.api.services.admin.directory.model.User> {
+        private String username;
+        private List<String> foundUsers;
+        private List<String> missingUsers;
+
+        public UserHandler(String username, List<String> foundUsers, List<String> missingUsers) {
+            this.username = username;
+            this.foundUsers = foundUsers;
+            this.missingUsers = missingUsers;
+        }
+
+        public void onSuccess(com.google.api.services.admin.directory.model.User user, HttpHeaders responseHeaders) {
+            this.foundUsers.add(this.username);
+        }
+
+        public void onFailure(GoogleJsonError e, HttpHeaders responseHeaders) {
+            if (e.getCode() == 403) {
+                GoogleGroupTarget.this.rateLimiter.rateLimitHit();
+            }
+
+            if (e.getCode() == 404) {
+                this.missingUsers.add(this.username);
+            } else {
+                throw new RuntimeException("Failed during Google lookup for user: " + this.username + " " + e);
+            }
         }
     }
 

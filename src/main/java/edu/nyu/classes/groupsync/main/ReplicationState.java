@@ -1,10 +1,6 @@
 package edu.nyu.classes.groupsync.main;
 
-import edu.nyu.classes.groupsync.api.Differences;
-import edu.nyu.classes.groupsync.api.Group;
-import edu.nyu.classes.groupsync.api.GroupSet;
-import edu.nyu.classes.groupsync.api.GroupTarget;
-import edu.nyu.classes.groupsync.api.TargetStore;
+import edu.nyu.classes.groupsync.api.*;
 import edu.nyu.classes.groupsync.main.db.DB;
 import edu.nyu.classes.groupsync.main.db.DBAction;
 import edu.nyu.classes.groupsync.main.db.DBConnection;
@@ -15,12 +11,15 @@ import org.slf4j.LoggerFactory;
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
-public class ReplicationState implements TargetStore {
+public class ReplicationState implements TargetStore, UserProvisionerState {
     private static Logger logger = LoggerFactory.getLogger(ReplicationState.class);
 
     private DataSource db;
@@ -293,4 +292,134 @@ public class ReplicationState implements TargetStore {
         });
     }
 
+    public void addPlaceholders(String targetId, List<String> userIds) {
+        DB.transaction(db, new DBAction<Void>() {
+            @Override
+            public Void call(DBConnection c) throws SQLException {
+                long now = System.currentTimeMillis();
+
+                for (String userId : userIds) {
+                    DBPreparedStatement insert = c.run("insert into groupsync_user_status (target_id, username, status, created_time) values (?, ?, ?, ?)");
+
+                    insert.param(targetId);
+                    insert.param(userId);
+                    insert.param("unchecked");
+                    insert.param(now);
+
+                    try {
+                        insert.executeUpdate();
+                    } catch (SQLException e) {
+                        if (e.getSQLState().startsWith("23")) {
+                            // Integrity violation.  We expect this to fail for users who were already there
+                        } else {
+                            throw e;
+                        }
+                    }
+                }
+
+                c.commit();
+
+                return null;
+            }
+        });
+    }
+
+    public List<String> getUsersToCheck(String targetId, UserProvisionerState.CheckPredicate predicate) {
+        return DB.transaction(db, new DBAction<List<String>>() {
+            @Override
+            public List<String> call(DBConnection c) throws SQLException {
+                DBPreparedStatement select = c.run("select username, created_time, last_checked_time from groupsync_user_status where status != 'provisioned' AND target_id = ?");
+                select.param(targetId);
+
+                List<String> result = new ArrayList<>();
+
+                for (ResultSet rs : select.executeQuery()) {
+                    long createdTime = rs.getLong("created_time");
+                    long lastCheckedTime = rs.getLong("last_checked_time");
+                    String username = rs.getString("username");
+
+                    if (predicate.check(createdTime, lastCheckedTime)) {
+                        result.add(username);
+                    }
+                }
+
+                return result;
+            }
+        });
+    }
+
+    public void markUsersAsProvisioned(String targetId, long now, List<String> userIds) {
+        markUsersWithStatus(targetId, now, userIds, "provisioned");
+    }
+
+    public void markUsersAsPending(String targetId, long now, List<String> userIds) {
+        markUsersWithStatus(targetId, now, userIds, "pending");
+    }
+
+    public Set<String> selectProvisionedUsers(String targetId, List<String> userIds) {
+        final Set<String> result = new HashSet<>();
+
+        DB.transaction(db, new DBAction<Void>() {
+            @Override
+            public Void call(DBConnection c) throws SQLException {
+                int pageSize = 256;
+                for (int i = 0; i < userIds.size(); i += pageSize) {
+                    int upper = Math.min(i + pageSize, userIds.size());
+
+                    List<String> subset = userIds.subList(i, upper);
+                    String placeholders = subset.stream().map(_p -> "?").collect(Collectors.joining(","));
+
+                    DBPreparedStatement query = c.run("select username from groupsync_user_status" +
+                                                      " where status = 'provisioned' " +
+                                                      " AND target_id = ?" +
+                                                      " AND username in (" + placeholders + ")");
+
+
+                    query.param(targetId);
+
+                    for (String userId : subset) {
+                        query.param(userId);
+                    }
+
+                    for (ResultSet rs : query.executeQuery()) {
+                        result.add(rs.getString("username"));
+                    }
+                }
+
+                return null;
+            }
+        });
+
+        return result;
+    }
+
+    private void markUsersWithStatus(String targetId, long now, List<String> userIds, String status) {
+        if (userIds.isEmpty()) {
+            return;
+        }
+
+        DB.transaction(db, new DBAction<Void>() {
+            @Override
+            public Void call(DBConnection c) throws SQLException {
+                for (String userId : userIds) {
+                    DBPreparedStatement update = c.run("update groupsync_user_status" +
+                                                       " set status = ?," +
+                                                       " last_checked_time = ?" +
+                                                       " where username = ? AND target_id = ?");
+
+                    update.param(status);
+                    update.param(now);
+                    update.param(userId);
+                    update.param(targetId);
+
+                    update.executeUpdate();
+                }
+
+                c.commit();
+
+                return null;
+            }
+        });
+    }
 }
+

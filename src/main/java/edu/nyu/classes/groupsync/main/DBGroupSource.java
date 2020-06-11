@@ -50,6 +50,20 @@ public class DBGroupSource implements GroupSource {
         DB.transaction(db, new DBAction<Void>() {
             @Override
             public Void call(DBConnection c) throws SQLException {
+                // Any group containing a member that has recently been marked as "provisioned" can now be resynced.
+                DBPreparedStatement updateProvisioned = c.run("update " + groupInfoTable + " ggd " +
+                                                              " set ggd.ready_for_sync_time = ?" +
+                                                              " where ggd.group_id in (" +
+                                                              "   select group_id from grouper_groupsync_users ggu " +
+                                                              "     inner join groupsync_user_status gsu on gsu.username = ggu.email " +
+                                                              "     where gsu.status = 'provisioned' AND gsu.last_checked_time >= ? " +
+                                                              " )");
+
+                updateProvisioned.param(System.currentTimeMillis());
+                updateProvisioned.param(time);
+
+                updateProvisioned.executeUpdate();
+
                 // Add all groups -- even the ones with no members
                 DBPreparedStatement groups = c.run("select lower(replace(ggd.group_id, ':', '-')) group_id, ggd.description, ggd.ready_for_sync_time" +
                         " from " + groupInfoTable + " ggd " +
@@ -92,6 +106,8 @@ public class DBGroupSource implements GroupSource {
                                                   groupName));
                     }
                 }
+
+                c.commit();
 
                 return null;
             }
