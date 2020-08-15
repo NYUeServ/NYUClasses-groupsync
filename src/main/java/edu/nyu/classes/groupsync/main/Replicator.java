@@ -231,7 +231,7 @@ public class Replicator extends Thread {
 
 
     private boolean isCriticalException(Exception e) {
-        if (e.toString().indexOf("backendError") >= 0) {
+        if (e.toString().indexOf("backendError") >= 0 || e.toString().indexOf("502 Bad Gateway") >= 0) {
             // Google intermittently throws these and there's not much we can do
             // about it.
             return false;
