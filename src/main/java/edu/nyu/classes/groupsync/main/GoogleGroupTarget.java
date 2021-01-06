@@ -736,6 +736,21 @@ public class GoogleGroupTarget implements GroupTarget {
                 return;
             }
 
+            if (diff instanceof Differences.MemberAdd &&
+                e.getErrors() != null &&
+                e.getErrors().size() == 1 &&
+                "notFound".equals(e.getErrors().get(0).getReason())) {
+
+                // Google doesn't know about this user, which might mean they've given an
+                // address that is no longer active.  Skip this error too since we don't control
+                // it.
+                appliedDiffs.add(diff);
+
+                logger.info("Caught 'notFound' error from Google.  This user address seems to be missing: {} {}", diff, e);
+
+                return;
+            }
+
             logger.info("Failed to apply diff: {}", diff);
             logger.info("Error from Google was: {}", e);
         }
