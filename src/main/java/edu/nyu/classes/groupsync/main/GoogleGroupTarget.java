@@ -47,6 +47,15 @@ public class GoogleGroupTarget implements GroupTarget {
         this.requestsPerBatch = requestsPerBatch;
         this.defaultGroupDescription = defaultGroupDescription;
         this.rateLimiter = rateLimiter;
+
+        // Here's how to dump all Google back and forth:
+
+        // java.util.logging.Logger httpLogger = java.util.logging.Logger.getLogger("com.google.api.client");
+        // httpLogger.setLevel(java.util.logging.Level.ALL);
+        //
+        // java.util.logging.ConsoleHandler logHandler = new java.util.logging.ConsoleHandler();
+        // logHandler.setLevel(java.util.logging.Level.ALL);
+        // httpLogger.addHandler(logHandler);
     }
 
     public String getId() {
@@ -341,7 +350,14 @@ public class GoogleGroupTarget implements GroupTarget {
                 com.google.api.services.admin.directory.model.Group googleGroup =
                         new com.google.api.services.admin.directory.model.Group();
                 googleGroup.setName(d.group.getDescription());
-                googleGroup.setDescription(groupDescriptions.get(d.group));
+
+                if (defaultGroupDescription.equals(groupDescriptions.get(d.group))) {
+                    // Don't keep the default if we have something better
+                    googleGroup.setDescription(d.group.getDescription());
+                } else {
+                    // Keep what's there
+                    googleGroup.setDescription(groupDescriptions.get(d.group));
+                }
 
                 Directory.Groups.Patch updateRequest = groups.patch(domainKey(d.group),
                         googleGroup);

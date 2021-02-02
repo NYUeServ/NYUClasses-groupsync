@@ -20,6 +20,6 @@ mkdir -p logs
 
 # Logging to weekday-based files so that we only keep the last 7 days
 # worth of stuff by default.  Saves having to logrotate.
-java -Dgroupsync-service=true -Xmx1g -Dlogback.configurationFile=config/logback.xml -cp "libs/*:$myjar" \
+java -Dgroupsync-service=true -Xmx1g -Dlogback.configurationFile=config/logback.xml -Djava.security.egd=file:/dev/urandom -cp "libs/*:$myjar" \
      edu.nyu.classes.groupsync.main.Main config/config.properties \
      2>&1 | ./log-rotater.pl logs/console.out.%a

@@ -41,7 +41,6 @@ public class DBGroupSource implements GroupSource {
         return id;
     }
 
-    // FIXME: probably want to rename 'netid' to 'eid' at some point
     public GroupSet updatedGroupsSince(long time) {
         logger.info("Return updates for {} since {}", id, time);
 

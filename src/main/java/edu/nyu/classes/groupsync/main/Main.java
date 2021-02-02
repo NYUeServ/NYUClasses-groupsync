@@ -6,6 +6,8 @@ import edu.nyu.classes.groupsync.api.GroupTarget;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.nyu.classes.groupsync.brightspace.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,6 +61,16 @@ public class Main {
                             sourceConfig.getString("group_users_table"),
                             sourceConfig.getString("sync_status_table"));
 
+                } else if ("brightspace".equals(sourceConfig.getString("type"))) {
+                    HikariDataSource ds = new HikariDataSource();
+
+                    ds.setJdbcUrl(sourceConfig.getString("oauth_jdbc_url"));
+                    ds.setUsername(sourceConfig.getString("oauth_jdbc_user"));
+                    ds.setPassword(sourceConfig.getString("oauth_jdbc_pass"));
+
+                    BrightspaceClient brightspace = new BrightspaceClient(sourceConfig, ds);
+
+                    source = new BrightspaceGroupSource(sourceConfig.getString("id"), brightspace);
                 } else {
                     throw new RuntimeException("Unknown source type: " + sourceConfig.getString("type"));
                 }

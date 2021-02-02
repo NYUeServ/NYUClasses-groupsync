@@ -70,6 +70,17 @@ public class Config {
             return Config.this.getString(prefix + "." + name, defaultValue);
         }
 
+        public long getLong(String name, long defaultValue) {
+            String s = getString(name, "");
+
+            if (s.isEmpty()) {
+                return defaultValue;
+            }
+
+            return Long.valueOf(s);
+        }
+
+
     }
 
 }

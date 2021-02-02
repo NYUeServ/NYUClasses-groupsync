@@ -51,11 +51,17 @@ public class Replicator extends Thread {
     }
 
     public void run() {
+        long iteration = 0;
         while (true) {
-            try {
-                Thread.sleep(pollIntervalMs);
-            } catch (InterruptedException e) {
+            if (iteration > 0) {
+                try {
+                    Thread.sleep(pollIntervalMs);
+                } catch (InterruptedException e) {
+                }
             }
+
+            iteration++;
+
 
             try {
                 long now = System.currentTimeMillis();
