@@ -78,7 +78,8 @@ public class ReplicationState implements TargetStore {
                         delete.clearParameters();
                         delete.param(targetId);
                         delete.param(g.getName());
-                        delete.executeUpdate();
+                        delete.addBatch();
+                        delete.executeBatch();
 
                         Set<String> seenUserIds = new HashSet<>();
 
