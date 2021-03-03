@@ -169,6 +169,8 @@ public class BrightspaceClient {
                         .param("true")
                         .executeUpdate();
 
+                    db.commit();
+
                     return null;
                 });
         } catch (InterruptedException | ExecutionException e) {
