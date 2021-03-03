@@ -26,6 +26,7 @@ import java.util.concurrent.*;
 import java.util.stream.*;
 
 import javax.sql.DataSource;
+import java.sql.SQLException;
 
 
 
@@ -41,6 +42,8 @@ public class BrightspaceClient {
 
     private static Map<String, String> apiVersions;
 
+    private DataSource darksideDataSource;
+
     static {
         apiVersions = new HashMap();
         apiVersions.put("lp", "1.25");
@@ -49,6 +52,11 @@ public class BrightspaceClient {
 
     public BrightspaceClient(Config.Group config, DataSource dataSource) {
         this.config = config;
+
+        // TOTALLY cheating here: this is the oauth_jdbc connection, which I happen to
+        // know is also Darkside.  A better person would pass in a separate DataSource
+        // for this.  Welp...
+        darksideDataSource = dataSource;
 
         tokens = new OAuth(config, dataSource);
         requestPool = Executors.newFixedThreadPool(32);
@@ -146,6 +154,23 @@ public class BrightspaceClient {
                                                                                           needsSyncOrgUnit)));
 
             removeResponse.get().assertOK();
+
+            DB.transaction
+                (this.darksideDataSource,
+                 "Mark this group as migrated in Darkside",
+                 (DBConnection db) -> {
+                    db.run("DELETE from nyu_t_darkside_org_unit_props where name = 'google-group-synced' AND org_unit_id = ?")
+                        .param(courseOfferingId)
+                        .executeUpdate();
+
+                    db.run("INSERT INTO nyu_t_darkside_org_unit_props (org_unit_id, name, value) values (?, ?, ?)")
+                        .param(courseOfferingId)
+                        .param("google-group-synced")
+                        .param("true")
+                        .executeUpdate();
+
+                    return null;
+                });
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
