@@ -54,7 +54,7 @@ public class BrightspaceGroupSource implements GroupSource {
                 List<BrightspaceClient.BrightspaceSiteUser> users = brightspace.getSiteUsers(courseOfferingId);
 
                 Group newGroup = result.createOrGetGroup(new Group(sanitizeName(String.format("%s_%s", siteInfo.code, courseOfferingId)),
-                                                                   String.format("All Members - %s", siteInfo.title)));
+                                                                   chopDescription(String.format("All Members - %s", siteInfo.title), 72)));
 
                 groupNameToCourseOfferingId.put(newGroup.getName(), courseOfferingId);
 
@@ -73,6 +73,14 @@ public class BrightspaceGroupSource implements GroupSource {
         return result;
     }
 
+
+    private String chopDescription(String description, int length) {
+        if (description.length() <= length) {
+            return description;
+        }
+
+        return description.substring(0, length - 3) + "...";
+    }
 
     public void markGroupAsSynced(Group group) throws Exception {
         String courseOfferingId = groupNameToCourseOfferingId.get(group.getName());
