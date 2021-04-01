@@ -32,6 +32,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import java.util.function.Consumer;
+
 public class GoogleGroupTarget implements GroupTarget {
     private static Logger logger = LoggerFactory.getLogger(GoogleGroupTarget.class);
 
@@ -85,6 +87,8 @@ public class GoogleGroupTarget implements GroupTarget {
 
         // Create the groups (if any)
         if (!newGroups.isEmpty()) {
+            final List<Group> failedGroups = new ArrayList<>();
+
             try {
                 Directory directory = google.getDirectory();
                 Directory.Groups groups = directory.groups();
@@ -101,10 +105,23 @@ public class GoogleGroupTarget implements GroupTarget {
                     logger.info("Creating new group in Google: {}", g.getName());
 
                     Directory.Groups.Insert groupRequest = groups.insert(googleGroup);
-                    batch.queue(groupRequest, new GroupCreateHandler(g));
+                    batch.queue(groupRequest, new GroupCreateHandler(g, (failedGroup) -> {
+                        failedGroups.add(failedGroup);
+                    }));
                 }
 
                 batch.execute();
+
+                // If any groups failed to create, remove them from our WAL and blow up
+                if (!failedGroups.isEmpty()) {
+                    for (Group group : failedGroups) {
+                        groupsNeedingSettings.remove(group);
+                    }
+
+                    state.writeSet(this, SETTINGS_STATE_KEY, groupsNeedingSettings);
+
+                    throw new RuntimeException(String.format("%d groups failed to create", failedGroups.size()));
+                }
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -571,9 +588,15 @@ public class GoogleGroupTarget implements GroupTarget {
 
     private class GroupCreateHandler extends JsonBatchCallback<com.google.api.services.admin.directory.model.Group> {
         private Group group;
+        private Consumer<Group> failureHandler;
 
         public GroupCreateHandler(Group group) {
+            this(group, null);
+        }
+
+        public GroupCreateHandler(Group group, Consumer<Group> failureHandler) {
             this.group = group;
+            this.failureHandler = failureHandler;
         }
 
         public void onSuccess(com.google.api.services.admin.directory.model.Group group, HttpHeaders responseHeaders) {
@@ -586,7 +609,11 @@ public class GoogleGroupTarget implements GroupTarget {
             }
 
             logger.info("Failed while creating group '{}': {}", group.getName(), e.getMessage());
-            throw new RuntimeException("Failed during creation for group: " + group.getName() + " " + e);
+            if (this.failureHandler == null) {
+                throw new RuntimeException("Failed during creation for group: " + group.getName() + " " + e);
+            } else {
+                failureHandler.accept(group);
+            }
         }
     }
 
