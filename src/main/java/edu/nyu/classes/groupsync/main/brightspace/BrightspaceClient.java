@@ -205,9 +205,9 @@ public class BrightspaceClient {
 
                         Role role = null;
 
-                        if (brightspaceRole.toLowerCase(Locale.ROOT).matches("^.*(instructor|course_site_admin).*$")) {
+                        if (brightspaceRole.toLowerCase(Locale.ROOT).matches("^.*(instructor|course site admin).*$")) {
                             role = Role.MANAGER;
-                        } else if (brightspaceRole.toLowerCase(Locale.ROOT).matches("^.*(student|teaching_assistant).*$")) {
+                        } else if (brightspaceRole.toLowerCase(Locale.ROOT).matches("^.*(student|teaching assistant).*$")) {
                             role = Role.MEMBER;
                         }
 
