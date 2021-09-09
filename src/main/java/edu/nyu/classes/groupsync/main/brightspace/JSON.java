@@ -25,11 +25,7 @@ public class JSON {
     }
 
     public static JSON parse(byte[] json) {
-        try {
-            return JSON.parse(new String(json, "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+        return JSON.parse(new String(json, java.nio.charset.StandardCharsets.UTF_8));
     }
 
     public static JSON parse(Reader stream) {
@@ -97,7 +93,7 @@ public class JSON {
     }
 
     public Long asLong(Long dflt) {
-        if (this.missing || elt == null) {
+        if (this.missing || this.elt == null) {
             return dflt;
         } else {
             return asLongOrDie();
@@ -117,7 +113,7 @@ public class JSON {
     }
 
     public String asString(String dflt) {
-        if (this.missing || elt == null) {
+        if (this.missing || this.elt == null) {
             return dflt;
         } else {
             return asStringOrDie();
@@ -135,7 +131,7 @@ public class JSON {
     }
 
     public Boolean asBoolean(Boolean dflt) {
-        if (this.missing || elt == null) {
+        if (this.missing || this.elt == null) {
             return dflt;
         } else {
             return asBooleanOrDie();
@@ -149,7 +145,7 @@ public class JSON {
             return (Boolean)elt;
         }
 
-        throw new RuntimeException(String.format("Expected a string but had: %s", String.valueOf(elt)));
+        throw new RuntimeException(String.format("Expected a boolean but had: %s", String.valueOf(elt)));
     }
 
     public boolean isMissing() {
@@ -166,31 +162,56 @@ public class JSON {
         return elt == null;
     }
 
+    public boolean isEmpty() {
+        checkPresent();
+
+        if (elt instanceof JSONObject) {
+            return ((JSONObject) elt).size() == 0;
+        } else if (elt instanceof JSONArray) {
+            return ((JSONArray) elt).size() == 0;
+        } else if (elt instanceof String) {
+            return ((String) elt).length() == 0;
+        } else {
+            return false;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
     public List<JSON> asJSONList() {
         checkPresent();
         checkType(elt, JSONArray.class);
 
-        List<JSON> result = new ArrayList();
+        List<JSON> result = new ArrayList<>();
 
         ((JSONArray)elt).stream().forEach((obj) -> result.add(new JSON(obj)));
 
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     public List<String> asStringList() {
         checkPresent();
         checkType(elt, JSONArray.class);
 
-        List<String> result = new ArrayList();
+        List<String> result = new ArrayList<>();
         ((JSONArray)elt).stream().forEach((obj) -> result.add((String)obj));
         return result;
     }
 
+    @SuppressWarnings("unchecked")
+    public List<String> keys() {
+        checkPresent();
+        checkType(elt, JSONObject.class);
+
+        return new ArrayList<String>(((JSONObject)elt).keySet());
+    }
+
+    @SuppressWarnings("unchecked")
     public List<Long> asLongList() {
         checkPresent();
         checkType(elt, JSONArray.class);
 
-        List<Long> result = new ArrayList();
+        List<Long> result = new ArrayList<>();
         ((JSONArray)elt).stream().forEach((obj) -> result.add((Long)obj));
         return result;
     }

@@ -57,7 +57,7 @@ public class OAuth {
         }
     }
 
-    private AtomicReference<Map<String, OAuthApplication>> oauthApplicationByClientId = new AtomicReference(new HashMap<>());
+    private AtomicReference<Map<String, OAuthApplication>> oauthApplicationByClientId = new AtomicReference<>(new HashMap<>());
 
     public OAuth(Config.Group config, DataSource ds) {
         this.config = config;

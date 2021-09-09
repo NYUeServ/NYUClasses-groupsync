@@ -144,6 +144,9 @@ public class GoogleGroupTarget implements GroupTarget {
                     groupSettings.setWhoCanViewMembership("ALL_MANAGERS_CAN_VIEW");
                     groupSettings.setWhoCanContactOwner("ALL_MANAGERS_CAN_CONTACT");
 
+                    groupSettings.setWhoCanViewGroup("ALL_MEMBERS_CAN_VIEW");
+                    groupSettings.setWhoCanDiscoverGroup("ALL_MEMBERS_CAN_DISCOVER");
+
                     Groupssettings.Groups.Patch settingsRequest = groups.patch(groupKey, groupSettings);
                     batch.queue(settingsRequest, new GroupSettingsHandler(groupKey));
                 }
@@ -403,19 +406,19 @@ public class GoogleGroupTarget implements GroupTarget {
         // According to the docs, Google sets their maximum to 1000, but we
         // can't really use that without hitting the rate limit.  See
         // RateLimiter above.
-        private LinkedList<AbstractGoogleJsonClientRequest> requests = new LinkedList<>();
-        private LinkedList<JsonBatchCallback> callbacks = new LinkedList<>();
+        private LinkedList<AbstractGoogleJsonClientRequest<?>> requests = new LinkedList<>();
+        private LinkedList<JsonBatchCallback<?>> callbacks = new LinkedList<>();
         private AbstractGoogleClient client;
 
 
         public LimitedBatchRequest(AbstractGoogleClient client) throws Exception {
-            requests = new LinkedList<AbstractGoogleJsonClientRequest>();
-            callbacks = new LinkedList<JsonBatchCallback>();
+            requests = new LinkedList<AbstractGoogleJsonClientRequest<?>>();
+            callbacks = new LinkedList<>();
 
             this.client = client;
         }
 
-        public void queue(AbstractGoogleJsonClientRequest request, JsonBatchCallback callback) {
+        public void queue(AbstractGoogleJsonClientRequest<?> request, JsonBatchCallback<?> callback) {
             requests.add(request);
             callbacks.add(callback);
         }
@@ -430,6 +433,7 @@ public class GoogleGroupTarget implements GroupTarget {
             }
         }
 
+        @SuppressWarnings("unchecked")
         private boolean executeNextBatch() throws Exception {
             if (requests.isEmpty()) {
                 return false;

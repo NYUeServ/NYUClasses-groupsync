@@ -45,7 +45,7 @@ public class BrightspaceClient {
     private DataSource darksideDataSource;
 
     static {
-        apiVersions = new HashMap();
+        apiVersions = new HashMap<>();
         apiVersions.put("lp", "1.25");
         apiVersions.put("le", "1.25");
     }

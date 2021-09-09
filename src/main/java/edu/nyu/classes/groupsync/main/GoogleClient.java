@@ -139,9 +139,9 @@ public class GoogleClient {
         }
 
         protected <V extends Serializable> DataStore<V> createDataStore(String id) throws IOException {
-            return new NYUFileDataStore(new File(dataStoreLocation, "StoredCredential"),
-                                        this,
-                                        wrappedFactory.getDataStore(id));
+            return new NYUFileDataStore<>(new File(dataStoreLocation, "StoredCredential"),
+                                          this,
+                                          wrappedFactory.getDataStore(id));
         }
     }
 
@@ -151,7 +151,7 @@ public class GoogleClient {
         private DataStore<V> wrappedDataStore;
         private Lock lock;
 
-        public NYUFileDataStore(File credentialFile, DataStoreFactory factory, DataStore wrappedDataStore) {
+        public NYUFileDataStore(File credentialFile, DataStoreFactory factory, DataStore<V> wrappedDataStore) {
             this.lock = new ReentrantLock();
             this.credentialFile = credentialFile;
             this.factory = factory;
