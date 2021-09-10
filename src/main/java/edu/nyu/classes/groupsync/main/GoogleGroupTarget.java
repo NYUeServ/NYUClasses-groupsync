@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 import java.util.function.Consumer;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class GoogleGroupTarget implements GroupTarget {
     private static Logger logger = LoggerFactory.getLogger(GoogleGroupTarget.class);
@@ -42,6 +43,8 @@ public class GoogleGroupTarget implements GroupTarget {
     private int requestsPerBatch;
     private String defaultGroupDescription;
     private RateLimiter rateLimiter;
+
+    private static AtomicBoolean messedWithKyleSite = new AtomicBoolean(false);
 
     public GoogleGroupTarget(String id, int requestsPerBatch, String defaultGroupDescription, RateLimiter rateLimiter, GoogleClient google) {
         this.id = id;
@@ -58,6 +61,16 @@ public class GoogleGroupTarget implements GroupTarget {
         // java.util.logging.ConsoleHandler logHandler = new java.util.logging.ConsoleHandler();
         // logHandler.setLevel(java.util.logging.Level.ALL);
         // httpLogger.addHandler(logHandler);
+
+        if (messedWithKyleSite.getAndSet(true)) {
+            logger.info("Messing with Kyle's test site... for science!");
+            try {
+                messWithKyleTestGroup();
+            } catch (Exception e) {
+                logger.error("Kyle's revenge: {}", e);
+                e.printStackTrace();
+            }
+        }
     }
 
     public String getId() {
@@ -65,6 +78,61 @@ public class GoogleGroupTarget implements GroupTarget {
     }
 
     private static String SETTINGS_STATE_KEY = "GROUPS_NEEDING_SETTINGS";
+
+    public void messWithKyleTestGroup() {
+        String groupKey = "kblythe_sbx_508_92050@nyu.edu";
+
+        logger.info("Setting some temporary values for Kyle's site");
+
+        // Temporary (incorrect) values
+        try {
+            Groupssettings settings = google.getGroupSettings();
+            Groupssettings.Groups groups = settings.groups();
+
+            LimitedBatchRequest batch = new LimitedBatchRequest(settings);
+
+            Groups groupSettings = new Groups();
+
+            groupSettings.setWhoCanViewMembership("ALL_MEMBERS_CAN_VIEW");
+            groupSettings.setWhoCanViewGroup("ALL_MANAGERS_CAN_VIEW");
+            groupSettings.setWhoCanDiscoverGroup("ALL_IN_DOMAIN_CAN_DISCOVER");
+
+            Groupssettings.Groups.Patch settingsRequest = groups.patch(groupKey, groupSettings);
+            batch.queue(settingsRequest, new GroupSettingsHandler(groupKey));
+
+            batch.execute();
+        } catch (Exception e) {
+            logger.error("Failed while setting desired values for Kyle's test group: {}", e);
+
+            throw new RuntimeException(e);
+        }
+
+        logger.info("Setting corrected values for Kyle's site");
+
+        // Desired values
+        try {
+            Groupssettings settings = google.getGroupSettings();
+            Groupssettings.Groups groups = settings.groups();
+
+            LimitedBatchRequest batch = new LimitedBatchRequest(settings);
+
+            Groups groupSettings = new Groups();
+
+            groupSettings.setWhoCanViewMembership("ALL_MANAGERS_CAN_VIEW");
+            groupSettings.setWhoCanViewGroup("ALL_MEMBERS_CAN_VIEW");
+            groupSettings.setWhoCanDiscoverGroup("ALL_MEMBERS_CAN_DISCOVER");
+
+            Groupssettings.Groups.Patch settingsRequest = groups.patch(groupKey, groupSettings);
+            batch.queue(settingsRequest, new GroupSettingsHandler(groupKey));
+
+            batch.execute();
+        } catch (Exception e) {
+            logger.error("Failed while setting desired values for Kyle's test group: {}", e);
+            e.printStackTrace();
+
+            throw new RuntimeException(e);
+        }
+    }
 
     public void createNewGroups(Collection<Group> newGroups, TargetStore state) {
         // Creating a group and settings its members isn't an atomic operation,
