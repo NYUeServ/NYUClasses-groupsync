@@ -330,6 +330,21 @@ public class GoogleGroupTarget implements GroupTarget {
             LimitedBatchRequest batch = new LimitedBatchRequest(directory);
 
             //
+            // Deletions
+            for (Differences.Difference d : diffs) {
+                if (!(d instanceof Differences.MemberDrop)) {
+                    continue;
+                }
+
+                logger.info("Deleting user membership: {}", d);
+
+                Directory.Members.Delete deleteRequest = members.delete(domainKey(d.group),
+                        ((Differences.MemberDrop) d).userId);
+
+                batch.queue(deleteRequest, new MemberDiffAppliedHandler(d, appliedDiffs));
+            }
+
+            //
             // Insertions
             for (Differences.Difference d : diffs) {
                 if (!(d instanceof Differences.MemberAdd)) {
@@ -365,22 +380,6 @@ public class GoogleGroupTarget implements GroupTarget {
                         m);
 
                 batch.queue(updateRequest, new MemberDiffAppliedHandler(d, appliedDiffs));
-            }
-
-
-            //
-            // Deletions
-            for (Differences.Difference d : diffs) {
-                if (!(d instanceof Differences.MemberDrop)) {
-                    continue;
-                }
-
-                logger.info("Deleting user membership: {}", d);
-
-                Directory.Members.Delete deleteRequest = members.delete(domainKey(d.group),
-                        ((Differences.MemberDrop) d).userId);
-
-                batch.queue(deleteRequest, new MemberDiffAppliedHandler(d, appliedDiffs));
             }
 
             //
