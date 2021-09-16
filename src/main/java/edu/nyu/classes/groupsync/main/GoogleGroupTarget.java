@@ -80,7 +80,7 @@ public class GoogleGroupTarget implements GroupTarget {
     private static String SETTINGS_STATE_KEY = "GROUPS_NEEDING_SETTINGS";
 
     public void messWithKyleTestGroup() {
-        String groupKey = "kblythe_sbx_508_92050@nyu.edu";
+        String groupKey = "kblythe_sbx_502_42060@nyu.edu";
 
         logger.info("Setting some temporary values for Kyle's site");
 
@@ -89,8 +89,6 @@ public class GoogleGroupTarget implements GroupTarget {
             Groupssettings settings = google.getGroupSettings();
             Groupssettings.Groups groups = settings.groups();
 
-            LimitedBatchRequest batch = new LimitedBatchRequest(settings);
-
             Groups groupSettings = new Groups();
 
             groupSettings.setWhoCanViewMembership("ALL_MEMBERS_CAN_VIEW");
@@ -98,9 +96,8 @@ public class GoogleGroupTarget implements GroupTarget {
             groupSettings.setWhoCanDiscoverGroup("ALL_IN_DOMAIN_CAN_DISCOVER");
 
             Groupssettings.Groups.Patch settingsRequest = groups.patch(groupKey, groupSettings);
-            batch.queue(settingsRequest, new GroupSettingsHandler(groupKey));
 
-            batch.execute();
+            settingsRequest.execute();
         } catch (Exception e) {
             logger.error("Failed while setting desired values for Kyle's test group: {}", e);
 
@@ -114,8 +111,6 @@ public class GoogleGroupTarget implements GroupTarget {
             Groupssettings settings = google.getGroupSettings();
             Groupssettings.Groups groups = settings.groups();
 
-            LimitedBatchRequest batch = new LimitedBatchRequest(settings);
-
             Groups groupSettings = new Groups();
 
             groupSettings.setWhoCanViewMembership("ALL_MANAGERS_CAN_VIEW");
@@ -123,9 +118,7 @@ public class GoogleGroupTarget implements GroupTarget {
             groupSettings.setWhoCanDiscoverGroup("ALL_MEMBERS_CAN_DISCOVER");
 
             Groupssettings.Groups.Patch settingsRequest = groups.patch(groupKey, groupSettings);
-            batch.queue(settingsRequest, new GroupSettingsHandler(groupKey));
-
-            batch.execute();
+            settingsRequest.execute();
         } catch (Exception e) {
             logger.error("Failed while setting desired values for Kyle's test group: {}", e);
             e.printStackTrace();
