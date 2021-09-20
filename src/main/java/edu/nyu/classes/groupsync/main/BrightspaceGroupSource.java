@@ -44,26 +44,6 @@ public class BrightspaceGroupSource implements GroupSource {
         return name.replaceAll("[^a-zA-z0-9-_]", "_").toLowerCase(Locale.ROOT);
     }
 
-    private static String encodeHex(byte[] b) {
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 0; i < b.length; i++) {
-            sb.append(String.format("%02x", b[i]));
-        }
-
-        return sb.toString();
-    }
-
-    private String sha1(String input) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-1");
-            return encodeHex(digest.digest(input.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
     public GroupSet updatedGroupsSince(long time) {
         logger.info("Return updates for {} since {}", id, time);
 
@@ -91,20 +71,6 @@ public class BrightspaceGroupSource implements GroupSource {
             } catch (Exception e) {
                 logger.error("Skipped group {} due to exception", courseOfferingId, e);
             }
-        }
-
-        for (int i = 0; i < 20; i++) {
-            String groupNonce = sha1(String.format("test group nobatch %d", i)).substring(32);
-
-            String groupId = String.format("mt1970_%s_nobatch", groupNonce);
-
-            logger.info("GENERATING TEST GROUP: " + groupId);
-
-            Group newGroup = result.createOrGetGroup(new Group(groupId,
-                                                               "Mark and Payten test site"));
-
-            newGroup.addMembership("mt1970@nyu.edu", "manager");
-            newGroup.addMembership("pg1025@nyu.edu", "manager");
         }
 
         return result;
