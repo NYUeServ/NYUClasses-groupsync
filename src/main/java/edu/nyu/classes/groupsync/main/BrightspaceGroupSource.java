@@ -94,9 +94,9 @@ public class BrightspaceGroupSource implements GroupSource {
         }
 
         for (int i = 0; i < 20; i++) {
-            String groupNonce = sha1(String.format("test group %d", i)).substring(32);
+            String groupNonce = sha1(String.format("test group nobatch %d", i)).substring(32);
 
-            String groupId = String.format("mt1970_%s_nofix", groupNonce);
+            String groupId = String.format("mt1970_%s_nobatch", groupNonce);
 
             logger.info("GENERATING TEST GROUP: " + groupId);
 
