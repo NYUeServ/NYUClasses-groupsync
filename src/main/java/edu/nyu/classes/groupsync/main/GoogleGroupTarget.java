@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -44,7 +45,7 @@ public class GoogleGroupTarget implements GroupTarget {
     private String defaultGroupDescription;
     private RateLimiter rateLimiter;
 
-    private static AtomicBoolean messedWithKyleSite = new AtomicBoolean(false);
+    private static AtomicBoolean repairGroupsRun = new AtomicBoolean(false);
 
     public GoogleGroupTarget(String id, int requestsPerBatch, String defaultGroupDescription, RateLimiter rateLimiter, GoogleClient google) {
         this.id = id;
@@ -62,12 +63,12 @@ public class GoogleGroupTarget implements GroupTarget {
         // logHandler.setLevel(java.util.logging.Level.ALL);
         // httpLogger.addHandler(logHandler);
 
-        if (messedWithKyleSite.getAndSet(true)) {
-            logger.info("Messing with Kyle's test site... for science!");
+        if (repairGroupsRun.getAndSet(true)) {
+            logger.info("Repairing existing groups!");
             try {
-                messWithKyleTestGroup();
+                repairExistingGroups();
             } catch (Exception e) {
-                logger.error("Kyle's revenge: {}", e);
+                logger.error("Error repairing group: {}", e);
                 e.printStackTrace();
             }
         }
@@ -79,53 +80,77 @@ public class GoogleGroupTarget implements GroupTarget {
 
     private static String SETTINGS_STATE_KEY = "GROUPS_NEEDING_SETTINGS";
 
-    public void messWithKyleTestGroup() {
-        String groupKey = "kblythe_sbx_502_42060@nyu.edu";
+    public void repairExistingGroups() {
+        List<String> groupsToRepair = Arrays.asList(
+                                                    "mt1970_03d57904_nofix@nyu.edu",
+                                                    "mt1970_07fef6ee_nofix@nyu.edu",
+                                                    "mt1970_25c8252d_nofix@nyu.edu",
+                                                    "mt1970_28c24b49_nofix@nyu.edu",
+                                                    "mt1970_40bcb5a4_nofix@nyu.edu",
+                                                    "mt1970_54679c0f_nofix@nyu.edu",
+                                                    "mt1970_55cb4327_nofix@nyu.edu",
+                                                    "mt1970_588063df_nofix@nyu.edu",
+                                                    "mt1970_5e213c45_nofix@nyu.edu",
+                                                    "mt1970_684a8294_nofix@nyu.edu",
+                                                    "mt1970_6f91a8bf_nofix@nyu.edu",
+                                                    "mt1970_83ccfb0a_nofix@nyu.edu",
+                                                    "mt1970_8bdfabe9_nofix@nyu.edu",
+                                                    "mt1970_8fd40a0e_nofix@nyu.edu",
+                                                    "mt1970_af9c6f14_nofix@nyu.edu",
+                                                    "mt1970_b23e306c_nofix@nyu.edu",
+                                                    "mt1970_b460ed62_nofix@nyu.edu",
+                                                    "mt1970_cbe21579_nofix@nyu.edu",
+                                                    "mt1970_e6b509d5_nofix@nyu.edu",
+                                                    "mt1970_f8289b86_nofix@nyu.edu"
+                                                    );
 
-        logger.info("Setting some temporary values for Kyle's site");
+        for (String groupKey : groupsToRepair) {
+            logger.info("Working on group: " + groupKey);
 
-        // Temporary (incorrect) values
-        try {
-            Groupssettings settings = google.getGroupSettings();
-            Groupssettings.Groups groups = settings.groups();
+            // Temporary (incorrect) values
+            try {
+                Groupssettings settings = google.getGroupSettings();
+                Groupssettings.Groups groups = settings.groups();
 
-            Groups groupSettings = new Groups();
+                Groups groupSettings = new Groups();
 
-            groupSettings.setWhoCanViewMembership("ALL_MEMBERS_CAN_VIEW");
-            groupSettings.setWhoCanViewGroup("ALL_MANAGERS_CAN_VIEW");
-            groupSettings.setWhoCanDiscoverGroup("ALL_IN_DOMAIN_CAN_DISCOVER");
+                groupSettings.setWhoCanViewMembership("ALL_MEMBERS_CAN_VIEW");
+                groupSettings.setWhoCanViewGroup("ALL_MANAGERS_CAN_VIEW");
+                groupSettings.setWhoCanDiscoverGroup("ALL_IN_DOMAIN_CAN_DISCOVER");
 
-            Groupssettings.Groups.Patch settingsRequest = groups.patch(groupKey, groupSettings);
+                Groupssettings.Groups.Patch settingsRequest = groups.patch(groupKey, groupSettings);
 
-            settingsRequest.execute();
-        } catch (Exception e) {
-            logger.error("Failed while setting desired values for Kyle's test group: {}", e);
+                settingsRequest.execute();
+            } catch (Exception e) {
+                logger.error("Failed while setting desired values for group: {}", e);
 
-            throw new RuntimeException(e);
-        }
+                throw new RuntimeException(e);
+            }
 
-        logger.info("Setting corrected values for Kyle's site");
+            logger.info("Setting corrected values for group: " + groupKey);
 
-        // Desired values
-        try {
-            Groupssettings settings = google.getGroupSettings();
-            Groupssettings.Groups groups = settings.groups();
+            // Desired values
+            try {
+                Groupssettings settings = google.getGroupSettings();
+                Groupssettings.Groups groups = settings.groups();
 
-            Groups groupSettings = new Groups();
+                Groups groupSettings = new Groups();
 
-            groupSettings.setWhoCanViewMembership("ALL_MANAGERS_CAN_VIEW");
-            groupSettings.setWhoCanViewGroup("ALL_MEMBERS_CAN_VIEW");
-            groupSettings.setWhoCanDiscoverGroup("ALL_MEMBERS_CAN_DISCOVER");
+                groupSettings.setWhoCanViewMembership("ALL_MANAGERS_CAN_VIEW");
+                groupSettings.setWhoCanViewGroup("ALL_MEMBERS_CAN_VIEW");
+                groupSettings.setWhoCanDiscoverGroup("ALL_MEMBERS_CAN_DISCOVER");
 
-            Groupssettings.Groups.Patch settingsRequest = groups.patch(groupKey, groupSettings);
-            settingsRequest.execute();
-        } catch (Exception e) {
-            logger.error("Failed while setting desired values for Kyle's test group: {}", e);
-            e.printStackTrace();
+                Groupssettings.Groups.Patch settingsRequest = groups.patch(groupKey, groupSettings);
+                settingsRequest.execute();
+            } catch (Exception e) {
+                logger.error("Failed while setting desired values for group: {}", e);
+                e.printStackTrace();
 
-            throw new RuntimeException(e);
+                throw new RuntimeException(e);
+            }
         }
     }
+
 
     public void createNewGroups(Collection<Group> newGroups, TargetStore state) {
         // Creating a group and settings its members isn't an atomic operation,
