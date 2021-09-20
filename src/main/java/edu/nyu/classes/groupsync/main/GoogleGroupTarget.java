@@ -189,14 +189,43 @@ public class GoogleGroupTarget implements GroupTarget {
         }
 
         if (!groupsNeedingSettings.isEmpty()) {
+            // OLD VERSION: Using batch requests in the obvious way
+            // try {
+            //     Groupssettings settings = google.getGroupSettings();
+            //     Groupssettings.Groups groups = settings.groups();
+            //
+            //     LimitedBatchRequest batch = new LimitedBatchRequest(settings);
+            //
+            //     for (String groupKey : groupsNeedingSettings) {
+            //         Groups groupSettings = new Groups();
+            //         groupSettings.setWhoCanPostMessage("ALL_MEMBERS_CAN_POST");
+            //         groupSettings.setAllowExternalMembers("true");
+            //         groupSettings.setWhoCanJoin("INVITED_CAN_JOIN");
+            //         groupSettings.setIsArchived("true");
+            //         groupSettings.setDescription(defaultGroupDescription);
+            //         groupSettings.setWhoCanViewMembership("ALL_MANAGERS_CAN_VIEW");
+            //         groupSettings.setWhoCanContactOwner("ALL_MANAGERS_CAN_CONTACT");
+            //
+            //         groupSettings.setWhoCanViewGroup("ALL_MEMBERS_CAN_VIEW");
+            //         groupSettings.setWhoCanDiscoverGroup("ALL_MEMBERS_CAN_DISCOVER");
+            //
+            //         Groupssettings.Groups.Patch settingsRequest = groups.patch(groupKey, groupSettings);
+            //         batch.queue(settingsRequest, new GroupSettingsHandler(groupKey));
+            //     }
+            //
+            //     batch.execute();
+            // } catch (Exception e) {
+            //     throw new RuntimeException(e);
+            // }
+
+            // NEW VERSION: No batch requests
             try {
                 Groupssettings settings = google.getGroupSettings();
                 Groupssettings.Groups groups = settings.groups();
 
-                LimitedBatchRequest batch = new LimitedBatchRequest(settings);
-
                 for (String groupKey : groupsNeedingSettings) {
                     Groups groupSettings = new Groups();
+
                     groupSettings.setWhoCanPostMessage("ALL_MEMBERS_CAN_POST");
                     groupSettings.setAllowExternalMembers("true");
                     groupSettings.setWhoCanJoin("INVITED_CAN_JOIN");
@@ -209,10 +238,8 @@ public class GoogleGroupTarget implements GroupTarget {
                     groupSettings.setWhoCanDiscoverGroup("ALL_MEMBERS_CAN_DISCOVER");
 
                     Groupssettings.Groups.Patch settingsRequest = groups.patch(groupKey, groupSettings);
-                    batch.queue(settingsRequest, new GroupSettingsHandler(groupKey));
+                    settingsRequest.execute();
                 }
-
-                batch.execute();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
