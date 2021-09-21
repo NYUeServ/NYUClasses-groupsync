@@ -118,6 +118,9 @@ public class GoogleGroupTarget implements GroupTarget {
                 groupSettings.setWhoCanViewGroup("ALL_MANAGERS_CAN_VIEW");
                 groupSettings.setWhoCanDiscoverGroup("ALL_IN_DOMAIN_CAN_DISCOVER");
 
+                groupSettings.setWhoCanModerateMembers("OWNERS_ONLY");
+                groupSettings.setWhoCanLeaveGroup("ALL_MANAGERS_CAN_LEAVE");
+
                 Groupssettings.Groups.Patch settingsRequest = groups.patch(groupKey, groupSettings);
 
                 settingsRequest.execute();
@@ -135,6 +138,16 @@ public class GoogleGroupTarget implements GroupTarget {
                 Groupssettings.Groups groups = settings.groups();
 
                 Groups groupSettings = new Groups();
+
+                groupSettings.setWhoCanPostMessage("ALL_MEMBERS_CAN_POST");
+                groupSettings.setAllowExternalMembers("true");
+                groupSettings.setWhoCanJoin("INVITED_CAN_JOIN");
+                groupSettings.setIsArchived("true");
+                groupSettings.setDescription(defaultGroupDescription);
+                groupSettings.setWhoCanContactOwner("ALL_MANAGERS_CAN_CONTACT");
+
+                groupSettings.setWhoCanModerateMembers("NONE");
+                groupSettings.setWhoCanLeaveGroup("NONE_CAN_LEAVE");
 
                 groupSettings.setWhoCanViewMembership("ALL_MANAGERS_CAN_VIEW");
                 groupSettings.setWhoCanViewGroup("ALL_MEMBERS_CAN_VIEW");
@@ -258,6 +271,9 @@ public class GoogleGroupTarget implements GroupTarget {
                     groupSettings.setDescription(defaultGroupDescription);
                     groupSettings.setWhoCanViewMembership("ALL_MANAGERS_CAN_VIEW");
                     groupSettings.setWhoCanContactOwner("ALL_MANAGERS_CAN_CONTACT");
+
+                    groupSettings.setWhoCanModerateMembers("NONE");
+                    groupSettings.setWhoCanLeaveGroup("NONE_CAN_LEAVE");
 
                     groupSettings.setWhoCanViewGroup("ALL_MEMBERS_CAN_VIEW");
                     groupSettings.setWhoCanDiscoverGroup("ALL_MEMBERS_CAN_DISCOVER");
