@@ -101,56 +101,58 @@ public class GoogleGroupTarget implements GroupTarget {
 
                     // Temporary (incorrect) values
                     try {
-                        Groupssettings settings = google.getGroupSettings();
-                        Groupssettings.Groups groups = settings.groups();
+                        {
+                            Groupssettings settings = google.getGroupSettings();
+                            Groupssettings.Groups groups = settings.groups();
 
-                        Groups groupSettings = new Groups();
+                            Groups groupSettings = new Groups();
 
-                        groupSettings.setWhoCanViewMembership("ALL_MEMBERS_CAN_VIEW");
-                        groupSettings.setWhoCanViewGroup("ALL_MANAGERS_CAN_VIEW");
-                        groupSettings.setWhoCanDiscoverGroup("ALL_IN_DOMAIN_CAN_DISCOVER");
+                            groupSettings.setWhoCanViewMembership("ALL_MEMBERS_CAN_VIEW");
+                            groupSettings.setWhoCanViewGroup("ALL_MANAGERS_CAN_VIEW");
+                            groupSettings.setWhoCanDiscoverGroup("ALL_IN_DOMAIN_CAN_DISCOVER");
 
-                        groupSettings.setWhoCanModerateMembers("OWNERS_ONLY");
-                        groupSettings.setWhoCanLeaveGroup("ALL_MANAGERS_CAN_LEAVE");
+                            groupSettings.setWhoCanModerateMembers("OWNERS_ONLY");
+                            groupSettings.setWhoCanLeaveGroup("ALL_MANAGERS_CAN_LEAVE");
 
-                        Groupssettings.Groups.Patch settingsRequest = groups.patch(groupKey, groupSettings);
+                            Groupssettings.Groups.Patch settingsRequest = groups.patch(groupKey, groupSettings);
 
-                        settingsRequest.execute();
-                    } catch (Exception e) {
-                        logger.error("Failed while setting desired values for group: {}", e);
+                            settingsRequest.execute();
+                        }
 
-                        throw new RuntimeException(e);
-                    }
+                        {
+                            logger.info("Setting corrected values for group: " + groupKey);
 
-                    logger.info("Setting corrected values for group: " + groupKey);
+                            // Desired values
+                            Groupssettings settings = google.getGroupSettings();
+                            Groupssettings.Groups groups = settings.groups();
 
-                    // Desired values
-                    try {
-                        Groupssettings settings = google.getGroupSettings();
-                        Groupssettings.Groups groups = settings.groups();
+                            Groups groupSettings = new Groups();
 
-                        Groups groupSettings = new Groups();
+                            groupSettings.setWhoCanPostMessage("ALL_MEMBERS_CAN_POST");
+                            groupSettings.setAllowExternalMembers("true");
+                            groupSettings.setWhoCanJoin("INVITED_CAN_JOIN");
+                            groupSettings.setIsArchived("true");
+                            groupSettings.setDescription(defaultGroupDescription);
+                            groupSettings.setWhoCanContactOwner("ALL_MANAGERS_CAN_CONTACT");
 
-                        groupSettings.setWhoCanPostMessage("ALL_MEMBERS_CAN_POST");
-                        groupSettings.setAllowExternalMembers("true");
-                        groupSettings.setWhoCanJoin("INVITED_CAN_JOIN");
-                        groupSettings.setIsArchived("true");
-                        groupSettings.setDescription(defaultGroupDescription);
-                        groupSettings.setWhoCanContactOwner("ALL_MANAGERS_CAN_CONTACT");
+                            groupSettings.setWhoCanModerateMembers("NONE");
+                            groupSettings.setWhoCanLeaveGroup("NONE_CAN_LEAVE");
 
-                        groupSettings.setWhoCanModerateMembers("NONE");
-                        groupSettings.setWhoCanLeaveGroup("NONE_CAN_LEAVE");
+                            groupSettings.setWhoCanViewMembership("ALL_MANAGERS_CAN_VIEW");
+                            groupSettings.setWhoCanViewGroup("ALL_MEMBERS_CAN_VIEW");
+                            groupSettings.setWhoCanDiscoverGroup("ALL_MEMBERS_CAN_DISCOVER");
 
-                        groupSettings.setWhoCanViewMembership("ALL_MANAGERS_CAN_VIEW");
-                        groupSettings.setWhoCanViewGroup("ALL_MEMBERS_CAN_VIEW");
-                        groupSettings.setWhoCanDiscoverGroup("ALL_MEMBERS_CAN_DISCOVER");
-
-                        Groupssettings.Groups.Patch settingsRequest = groups.patch(groupKey, groupSettings);
-                        settingsRequest.execute();
+                            Groupssettings.Groups.Patch settingsRequest = groups.patch(groupKey, groupSettings);
+                            settingsRequest.execute();
+                        }
                     } catch (Exception e) {
                         logger.error("Failed while setting desired values for group: {}", e);
                         e.printStackTrace();
+                    }
 
+                    try {
+                        Thread.sleep(33);
+                    } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
                 });
