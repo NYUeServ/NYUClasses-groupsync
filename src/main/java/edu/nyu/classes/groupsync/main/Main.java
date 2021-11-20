@@ -64,9 +64,9 @@ public class Main {
                 } else if ("brightspace".equals(sourceConfig.getString("type"))) {
                     HikariDataSource ds = new HikariDataSource();
 
-                    ds.setJdbcUrl(sourceConfig.getString("oauth_jdbc_url"));
-                    ds.setUsername(sourceConfig.getString("oauth_jdbc_user"));
-                    ds.setPassword(sourceConfig.getString("oauth_jdbc_pass"));
+                    ds.setJdbcUrl(sourceConfig.getString("darkside_jdbc_url"));
+                    ds.setUsername(sourceConfig.getString("darkside_jdbc_user"));
+                    ds.setPassword(sourceConfig.getString("darkside_jdbc_pass"));
 
                     BrightspaceClient brightspace = new BrightspaceClient(sourceConfig, ds);
 

@@ -53,10 +53,7 @@ public class BrightspaceClient {
     public BrightspaceClient(Config.Group config, DataSource dataSource) {
         this.config = config;
 
-        // TOTALLY cheating here: this is the oauth_jdbc connection, which I happen to
-        // know is also Darkside.  A better person would pass in a separate DataSource
-        // for this.  Welp...
-        darksideDataSource = dataSource;
+        this.darksideDataSource = dataSource;
 
         tokens = new OAuth(config, dataSource);
         requestPool = Executors.newFixedThreadPool(32);
