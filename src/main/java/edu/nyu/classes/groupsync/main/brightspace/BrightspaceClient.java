@@ -175,7 +175,7 @@ public class BrightspaceClient {
         }
     }
 
-    public List<BrightspaceSiteUser> getSiteUsers(String courseOfferingId) {
+    public List<BrightspaceSiteUser> getActiveSiteUsers(String courseOfferingId) {
         try {
             List<BrightspaceSiteUser> result = new ArrayList<>();
 
@@ -206,6 +206,10 @@ public class BrightspaceClient {
                             role = Role.MANAGER;
                         } else if (brightspaceRole.toLowerCase(Locale.ROOT).matches("^.*(student|teaching assistant).*$")) {
                             role = Role.MEMBER;
+                        }
+
+                        if (brightspaceRole.toLowerCase(Locale.ROOT).matches("^.*(withdrawn).*$")) {
+                            LOG.info(String.format("User withdrawn from %s: %s", courseOfferingId, email));
                         }
 
                         if (role != null) {

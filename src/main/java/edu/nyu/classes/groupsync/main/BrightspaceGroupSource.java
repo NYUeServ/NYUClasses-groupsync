@@ -54,7 +54,7 @@ public class BrightspaceGroupSource implements GroupSource {
         for (String courseOfferingId : brightspace.listSitesForSync()) {
             try {
                 BrightspaceClient.CourseOfferingData siteInfo = brightspace.fetchCourseData(courseOfferingId);
-                List<BrightspaceClient.BrightspaceSiteUser> users = brightspace.getSiteUsers(courseOfferingId);
+                List<BrightspaceClient.BrightspaceSiteUser> users = brightspace.getActiveSiteUsers(courseOfferingId);
 
                 Group newGroup = result.createOrGetGroup(new Group(sanitizeName(String.format("%s_%s", siteInfo.code, courseOfferingId)),
                                                                    chopDescription(String.format("All Members - %s", siteInfo.title), 72)));
