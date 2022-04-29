@@ -6,7 +6,7 @@ import edu.nyu.classes.groupsync.api.GroupTarget;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.nyu.classes.groupsync.brightspace.*;
+import edu.nyu.classes.groupsync.main.brightspace.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;

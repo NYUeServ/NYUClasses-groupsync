@@ -1,4 +1,4 @@
-package edu.nyu.classes.groupsync.brightspace;
+package edu.nyu.classes.groupsync.main.brightspace;
 
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;

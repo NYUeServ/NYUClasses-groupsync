@@ -1,4 +1,4 @@
-package edu.nyu.classes.groupsync.brightspace;
+package edu.nyu.classes.groupsync.main.brightspace;
 
 import java.io.*;
 import java.util.*;

@@ -1,4 +1,4 @@
-package edu.nyu.classes.groupsync.brightspace;
+package edu.nyu.classes.groupsync.main.brightspace;
 
 import edu.nyu.classes.groupsync.main.Config;
 import edu.nyu.classes.groupsync.main.db.*;

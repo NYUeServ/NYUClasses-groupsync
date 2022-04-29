@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import edu.nyu.classes.groupsync.brightspace.*;
+import edu.nyu.classes.groupsync.main.brightspace.*;
 import edu.nyu.classes.groupsync.api.Role;
 import java.util.*;
 import java.util.concurrent.*;
