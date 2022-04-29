@@ -34,7 +34,7 @@ class RateLimiter {
         }
 
         while ((queriesInCurrentTimestep() + count) >= queriesPerTimestep) {
-            logger.warn("Waiting for rate limiter to allow another {} queries", count);
+            // logger.warn("Waiting for rate limiter to allow another {} queries", count);
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {}
