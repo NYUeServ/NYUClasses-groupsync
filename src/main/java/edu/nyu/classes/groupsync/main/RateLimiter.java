@@ -45,7 +45,7 @@ class RateLimiter {
     }
 
     private void recordQueries(long count) {
-        long now = System.currentTimeMillis();
+        long now = System.currentTimeMillis() / timestepMs;
 
         if (times.contains(now)) {
             queryCounts.put(now, queryCounts.get(now) + count);
@@ -58,7 +58,7 @@ class RateLimiter {
 
     private long queriesInLastTimestep() {
         long result = 0;
-        long timestepStart = System.currentTimeMillis() - timestepMs;
+        long timestepStart = (System.currentTimeMillis() - timestepMs) / timestepMs;
 
         Iterator<Long> it = times.iterator();
         while (it.hasNext()) {
