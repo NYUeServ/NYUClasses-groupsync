@@ -82,8 +82,8 @@ public class Main {
                     // Rate limits are applied at the user-level, so we should coordinate them.
                     RateLimiter rateLimiter = rateLimiters.get(targetConfig.getString("oauth_user"));
                     if (rateLimiter == null) {
-                        rateLimiter = new RateLimiter(Long.valueOf(targetConfig.getString("ratelimit_timestep_ms")),
-                                Long.valueOf(targetConfig.getString("queries_per_timestep")));
+                        rateLimiter = new RateLimiter(Long.valueOf(targetConfig.getString("queries_per_timestep")),
+                                                      Long.valueOf(targetConfig.getString("ratelimit_timestep_ms")));
 
                         rateLimiters.put(targetConfig.getString("oauth_user"), rateLimiter);
                     }
