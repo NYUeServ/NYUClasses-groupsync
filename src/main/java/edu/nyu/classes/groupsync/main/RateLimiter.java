@@ -33,7 +33,7 @@ class RateLimiter {
             throw new RuntimeException("Can't execute that many concurrent queries: " + count);
         }
 
-        while ((queriesInLastTimestep() + count) >= queriesPerTimestep) {
+        while ((queriesInCurrentTimestep() + count) >= queriesPerTimestep) {
             logger.warn("Waiting for rate limiter to allow another {} queries", count);
             try {
                 Thread.sleep(1000);
@@ -56,9 +56,9 @@ class RateLimiter {
     }
 
 
-    private long queriesInLastTimestep() {
+    private long queriesInCurrentTimestep() {
         long result = 0;
-        long timestepStart = (System.currentTimeMillis() - timestepMs) / timestepMs;
+        long timestepStart = System.currentTimeMillis() / timestepMs;
 
         Iterator<Long> it = times.iterator();
         while (it.hasNext()) {
