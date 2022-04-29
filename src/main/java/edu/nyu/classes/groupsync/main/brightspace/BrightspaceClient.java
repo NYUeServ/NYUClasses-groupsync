@@ -210,6 +210,7 @@ public class BrightspaceClient {
 
                         if (brightspaceRole.toLowerCase(Locale.ROOT).matches("^.*(withdrawn).*$")) {
                             LOG.info(String.format("User withdrawn from %s: %s", courseOfferingId, email));
+                            role = null;
                         }
 
                         if (role != null) {
