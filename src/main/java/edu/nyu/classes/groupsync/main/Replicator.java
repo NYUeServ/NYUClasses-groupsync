@@ -48,6 +48,8 @@ public class Replicator extends Thread {
 
             this.pollIntervalMs = 60000;
         }
+
+        this.setName(String.format("Replicator_%s_to_%s", source.getId(), target.getId()));
     }
 
     public void run() {

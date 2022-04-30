@@ -2,4 +2,4 @@
 
 cd "`dirname "$0"`"
 
-mvn package
+mvn clean package
