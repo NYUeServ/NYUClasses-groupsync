@@ -1,5 +1,13 @@
 package edu.nyu.classes.groupsync.main;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import javax.sql.DataSource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.nyu.classes.groupsync.api.Group;
 import edu.nyu.classes.groupsync.api.GroupSet;
 import edu.nyu.classes.groupsync.api.GroupSource;
@@ -7,13 +15,6 @@ import edu.nyu.classes.groupsync.main.db.DB;
 import edu.nyu.classes.groupsync.main.db.DBAction;
 import edu.nyu.classes.groupsync.main.db.DBConnection;
 import edu.nyu.classes.groupsync.main.db.DBPreparedStatement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.sql.DataSource;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Locale;
 
 public class DBGroupSource implements GroupSource {
     private static Logger logger = LoggerFactory.getLogger(DBGroupSource.class);

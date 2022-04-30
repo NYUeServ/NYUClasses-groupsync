@@ -1,5 +1,21 @@
 package edu.nyu.classes.groupsync.main;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+
 import com.google.api.client.googleapis.batch.BatchRequest;
 import com.google.api.client.googleapis.batch.json.JsonBatchCallback;
 import com.google.api.client.googleapis.json.GoogleJsonError;
@@ -13,34 +29,15 @@ import com.google.api.services.admin.directory.model.Member;
 import com.google.api.services.admin.directory.model.Members;
 import com.google.api.services.groupssettings.Groupssettings;
 import com.google.api.services.groupssettings.model.Groups;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.nyu.classes.groupsync.api.Differences;
 import edu.nyu.classes.groupsync.api.Group;
 import edu.nyu.classes.groupsync.api.GroupSet;
 import edu.nyu.classes.groupsync.api.GroupTarget;
-import edu.nyu.classes.groupsync.api.Role;
 import edu.nyu.classes.groupsync.api.TargetStore;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-
-import java.util.function.Consumer;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.charset.StandardCharsets;
-import java.io.File;
-import java.io.IOException;
 
 public class GoogleGroupTarget implements GroupTarget {
     private static Logger logger = LoggerFactory.getLogger(GoogleGroupTarget.class);
@@ -212,7 +209,7 @@ public class GoogleGroupTarget implements GroupTarget {
                 // If any groups failed to create, remove them from our WAL and blow up
                 if (!failedGroups.isEmpty()) {
                     for (Group group : failedGroups) {
-                        groupsNeedingSettings.remove(group);
+                        groupsNeedingSettings.remove(group.getName() + "@" + google.getDomain());
                     }
 
                     state.writeSet(this, SETTINGS_STATE_KEY, groupsNeedingSettings);
@@ -526,16 +523,6 @@ public class GoogleGroupTarget implements GroupTarget {
     }
 
 
-    private void executeBatch(BatchRequest batch) throws Exception {
-        if (batch.size() > 0) {
-            long start = System.currentTimeMillis();
-
-            logger.info("Executing batch of size: {}", batch.size());
-            batch.execute();
-            logger.info("Done in {} ms", System.currentTimeMillis() - start);
-        }
-    }
-
     private class LimitedBatchRequest {
 
         // According to the docs, Google sets their maximum to 1000, but we
@@ -729,10 +716,6 @@ public class GoogleGroupTarget implements GroupTarget {
         private Group group;
         private Consumer<Group> failureHandler;
 
-        public GroupCreateHandler(Group group) {
-            this(group, null);
-        }
-
         public GroupCreateHandler(Group group, Consumer<Group> failureHandler) {
             this.group = group;
             this.failureHandler = failureHandler;
@@ -756,26 +739,26 @@ public class GoogleGroupTarget implements GroupTarget {
         }
     }
 
-    private class GroupSettingsHandler extends JsonBatchCallback<com.google.api.services.groupssettings.model.Groups> {
-        private String groupKey;
-
-        public GroupSettingsHandler(String groupKey) {
-            this.groupKey = groupKey;
-        }
-
-        public void onSuccess(com.google.api.services.groupssettings.model.Groups groupSettings, HttpHeaders responseHeaders) {
-            logger.info("Successfully configured group '{}'", groupKey);
-        }
-
-        public void onFailure(GoogleJsonError e, HttpHeaders responseHeaders) {
-            if (e.getCode() == 403) {
-                GoogleGroupTarget.this.rateLimiter.rateLimitHit();
-            }
-
-            logger.info("Failed while creating group '{}': {}", groupKey, e.getMessage());
-            throw new RuntimeException("Failed while configuring group: " + groupKey + " " + e);
-        }
-    }
+    // private class GroupSettingsHandler extends JsonBatchCallback<com.google.api.services.groupssettings.model.Groups> {
+    //     private String groupKey;
+    //
+    //     public GroupSettingsHandler(String groupKey) {
+    //         this.groupKey = groupKey;
+    //     }
+    //
+    //     public void onSuccess(com.google.api.services.groupssettings.model.Groups groupSettings, HttpHeaders responseHeaders) {
+    //         logger.info("Successfully configured group '{}'", groupKey);
+    //     }
+    //
+    //     public void onFailure(GoogleJsonError e, HttpHeaders responseHeaders) {
+    //         if (e.getCode() == 403) {
+    //             GoogleGroupTarget.this.rateLimiter.rateLimitHit();
+    //         }
+    //
+    //         logger.info("Failed while creating group '{}': {}", groupKey, e.getMessage());
+    //         throw new RuntimeException("Failed while configuring group: " + groupKey + " " + e);
+    //     }
+    // }
 
     private class GroupDiffAppliedHandler extends JsonBatchCallback<com.google.api.services.admin.directory.model.Group> {
         private Differences.Difference diff;

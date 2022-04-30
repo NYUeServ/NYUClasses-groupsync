@@ -1,25 +1,17 @@
 package edu.nyu.classes.groupsync.main;
 
-import edu.nyu.classes.groupsync.api.Group;
-import edu.nyu.classes.groupsync.api.GroupSet;
-import edu.nyu.classes.groupsync.api.GroupSource;
-import edu.nyu.classes.groupsync.main.db.DB;
-import edu.nyu.classes.groupsync.main.db.DBAction;
-import edu.nyu.classes.groupsync.main.db.DBConnection;
-import edu.nyu.classes.groupsync.main.db.DBPreparedStatement;
+import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-import edu.nyu.classes.groupsync.main.brightspace.*;
+import edu.nyu.classes.groupsync.api.Group;
+import edu.nyu.classes.groupsync.api.GroupSet;
+import edu.nyu.classes.groupsync.api.GroupSource;
 import edu.nyu.classes.groupsync.api.Role;
-import java.util.*;
-import java.util.concurrent.*;
-
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import edu.nyu.classes.groupsync.main.brightspace.BrightspaceClient;
 
 public class BrightspaceGroupSource implements GroupSource {
     private static Logger logger = LoggerFactory.getLogger(BrightspaceGroupSource.class);
@@ -48,8 +40,6 @@ public class BrightspaceGroupSource implements GroupSource {
         logger.info("Return updates for {} since {}", id, time);
 
         final GroupSet result = new GroupSet();
-
-        long now = System.currentTimeMillis();
 
         for (String courseOfferingId : brightspace.listSitesForSync()) {
             try {

@@ -1,18 +1,19 @@
 package edu.nyu.classes.groupsync.main;
 
-import edu.nyu.classes.groupsync.api.Differences;
-import edu.nyu.classes.groupsync.api.Group;
-import edu.nyu.classes.groupsync.api.GroupSet;
-import edu.nyu.classes.groupsync.api.GroupSource;
-import edu.nyu.classes.groupsync.api.GroupTarget;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import edu.nyu.classes.groupsync.api.Differences;
+import edu.nyu.classes.groupsync.api.Group;
+import edu.nyu.classes.groupsync.api.GroupSet;
+import edu.nyu.classes.groupsync.api.GroupSource;
+import edu.nyu.classes.groupsync.api.GroupTarget;
 
 public class Replicator extends Thread {
     private static Logger logger = LoggerFactory.getLogger(Replicator.class);

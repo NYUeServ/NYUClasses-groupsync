@@ -1,6 +1,8 @@
 package edu.nyu.classes.groupsync.oauth;
 
-import edu.nyu.classes.groupsync.main.GoogleClient;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStreamReader;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
@@ -8,11 +10,8 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
-import com.google.api.services.admin.directory.DirectoryScopes;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
+import edu.nyu.classes.groupsync.main.GoogleClient;
 
 
 public class Authorize {

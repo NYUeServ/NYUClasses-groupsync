@@ -1,32 +1,40 @@
 package edu.nyu.classes.groupsync.main.brightspace;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
-import edu.nyu.classes.groupsync.main.Config;
+import javax.sql.DataSource;
 
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.*;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.*;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-
-import edu.nyu.classes.groupsync.main.db.*;
-import edu.nyu.classes.groupsync.api.*;
-
-// import org.sakaiproject.component.cover.HotReloadConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.*;
-import java.util.stream.*;
-
-import javax.sql.DataSource;
-import java.sql.SQLException;
+import edu.nyu.classes.groupsync.api.Role;
+import edu.nyu.classes.groupsync.main.Config;
+import edu.nyu.classes.groupsync.main.db.DB;
+import edu.nyu.classes.groupsync.main.db.DBConnection;
 
 
 

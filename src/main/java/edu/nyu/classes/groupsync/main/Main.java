@@ -1,17 +1,18 @@
 package edu.nyu.classes.groupsync.main;
 
-import com.zaxxer.hikari.HikariDataSource;
-import edu.nyu.classes.groupsync.api.GroupSource;
-import edu.nyu.classes.groupsync.api.GroupTarget;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import edu.nyu.classes.groupsync.main.brightspace.*;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.zaxxer.hikari.HikariDataSource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import edu.nyu.classes.groupsync.api.GroupSource;
+import edu.nyu.classes.groupsync.api.GroupTarget;
+import edu.nyu.classes.groupsync.main.brightspace.BrightspaceClient;
 
 public class Main {
     private static Logger logger = LoggerFactory.getLogger(Main.class);

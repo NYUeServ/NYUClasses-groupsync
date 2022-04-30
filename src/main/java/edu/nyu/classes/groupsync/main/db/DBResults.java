@@ -34,10 +34,8 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import java.util.function.Function;
 
 /**
  * Provide an iterator over a ResultSet.
@@ -119,7 +117,7 @@ public class DBResults implements Iterable<ResultSet>, Iterator<ResultSet>, Auto
         void apply(ResultSet r) throws SQLException;
     }
 
-    public void each(SQLAction fn) throws SQLException {
+    public void each(SQLAction<?> fn) throws SQLException {
         try {
             while (this.hasNext()) {
                 fn.apply(this.next());

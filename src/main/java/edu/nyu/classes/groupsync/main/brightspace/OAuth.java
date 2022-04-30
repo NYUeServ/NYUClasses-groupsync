@@ -1,25 +1,32 @@
 package edu.nyu.classes.groupsync.main.brightspace;
 
-import edu.nyu.classes.groupsync.main.Config;
-import edu.nyu.classes.groupsync.main.db.*;
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.atomic.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.URLEncoder;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.http.impl.client.*;
-import org.apache.http.client.methods.*;
+import javax.sql.DataSource;
+
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-
-import java.net.URLEncoder;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.sql.DataSource;
-import java.sql.DriverManager;
-import java.sql.Connection;
+import edu.nyu.classes.groupsync.main.Config;
+import edu.nyu.classes.groupsync.main.db.DB;
+import edu.nyu.classes.groupsync.main.db.DBConnection;
 
 
 public class OAuth {
@@ -302,8 +309,6 @@ public class OAuth {
             (this.dataSource,
              "List clients with refresh tokens",
              (DBConnection db) -> {
-                RefreshToken result = null;
-
                 return db.run("SELECT client_id from nyu_t_brightspace_oauth where system = ?")
                     .param(APP_ID)
                     .executeQuery()
