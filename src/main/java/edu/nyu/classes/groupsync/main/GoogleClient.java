@@ -17,10 +17,9 @@ import com.google.api.client.auth.oauth2.DataStoreCredentialRefreshListener;
 import com.google.api.client.auth.oauth2.TokenErrorResponse;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
-import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.AbstractDataStoreFactory;
 import com.google.api.client.util.store.DataStore;
 import com.google.api.client.util.store.DataStoreFactory;
@@ -29,6 +28,7 @@ import com.google.api.services.admin.directory.Directory;
 import com.google.api.services.admin.directory.DirectoryScopes;
 import com.google.api.services.groupssettings.Groupssettings;
 import com.google.api.services.groupssettings.GroupssettingsScopes;
+import com.google.auth.oauth2.GoogleCredentials;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,12 +43,12 @@ public class GoogleClient {
     private String credentialsPath;
 
     private HttpTransport httpTransport;
-    private JacksonFactory jsonFactory;
+    private GsonFactory jsonFactory;
     private String domain;
 
     public GoogleClient(String domain, String user, String secret, String credentialsPath) throws Exception {
         httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-        jsonFactory = JacksonFactory.getDefaultInstance();
+        jsonFactory = GsonFactory.getDefaultInstance();
 
         this.domain = domain;
         this.user = user;
@@ -92,30 +92,7 @@ public class GoogleClient {
             throw new RuntimeException("No stored credential was found for user: " + user);
         }
 
-        // Take our credential and wrap it in a GoogleCredential.  As far as
-        // I can tell, all this gives us is the ability to update our stored
-        // credentials as they get refreshed (using the
-        // DataStoreCredentialRefreshListener).
-        Credential credential = new GoogleCredential.Builder()
-                .setTransport(httpTransport)
-                .setJsonFactory(jsonFactory)
-                .setClientSecrets(user, secret)
-                .addRefreshListener(new CredentialRefreshListener() {
-                    public void onTokenErrorResponse(Credential credential, TokenErrorResponse tokenErrorResponse) {
-                        logger.error("OAuth token refresh error: " + tokenErrorResponse);
-                    }
-
-                    public void onTokenResponse(Credential credential, TokenResponse tokenResponse) {
-                        logger.info("OAuth token was refreshed");
-                    }
-                })
-                .addRefreshListener(new DataStoreCredentialRefreshListener(user, store))
-                .build();
-
-        credential.setAccessToken(storedCredential.getAccessToken());
-        credential.setRefreshToken(storedCredential.getRefreshToken());
-
-        return credential;
+        return storedCredential;
     }
 
     public Directory getDirectory() throws Exception {

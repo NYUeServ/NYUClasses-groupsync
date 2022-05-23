@@ -8,7 +8,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
-import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 
 import edu.nyu.classes.groupsync.main.GoogleClient;
@@ -32,7 +32,7 @@ public class Authorize {
             FileDataStoreFactory store = new FileDataStoreFactory(dataStoreLocation);
 
             HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-            JacksonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+            GsonFactory jsonFactory = GsonFactory.getDefaultInstance();
 
             // General idea: create the auth flow backed by a credential store;
             // check whether the store already has credentials for the user we
