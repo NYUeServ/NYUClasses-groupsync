@@ -264,6 +264,7 @@ public class BrightspaceClient {
             }
         }
 
+        @SuppressWarnings("unused")
         public JSON json() {
             try {
                 successOrDie();

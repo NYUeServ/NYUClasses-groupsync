@@ -25,11 +25,11 @@ import com.google.api.services.admin.directory.DirectoryScopes;
 import com.google.api.services.groupssettings.Groupssettings;
 import com.google.api.services.groupssettings.GroupssettingsScopes;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+// import org.slf4j.Logger;
+// import org.slf4j.LoggerFactory;
 
 public class GoogleClient {
-    private static Logger logger = LoggerFactory.getLogger(GoogleClient.class);
+    // private static Logger logger = LoggerFactory.getLogger(GoogleClient.class);
 
     private static String APPLICATION = "GroupSyncGoogleClient";
 

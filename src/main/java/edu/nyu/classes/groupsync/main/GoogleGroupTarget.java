@@ -555,7 +555,7 @@ public class GoogleGroupTarget implements GroupTarget {
             }
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({"unchecked", "rawtypes"})
         private boolean executeNextBatch() throws Exception {
             if (requests.isEmpty()) {
                 return false;

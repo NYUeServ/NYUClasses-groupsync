@@ -218,7 +218,7 @@ public class JSON {
     }
 
 
-    private void checkType(Object obj, Class clz) {
+    private void checkType(Object obj, Class<?> clz) {
         if (obj.getClass().equals(clz)) {
             return;
         }
