@@ -41,6 +41,8 @@ public class BrightspaceGroupSource implements GroupSource {
 
         final GroupSet result = new GroupSet();
 
+        EmailMapper emailMapper = new EmailMapper(brightspace);
+
         for (String courseOfferingId : brightspace.listSitesForSync()) {
             try {
                 BrightspaceClient.CourseOfferingData siteInfo = brightspace.fetchCourseData(courseOfferingId);
@@ -56,7 +58,7 @@ public class BrightspaceGroupSource implements GroupSource {
                         continue;
                     }
 
-                    newGroup.addMembership(user.email, user.role.toString().toLowerCase(Locale.ROOT));
+                    newGroup.addMembership(emailMapper.map(user.email), user.role.toString().toLowerCase(Locale.ROOT));
                 }
             } catch (Exception e) {
                 logger.error("Skipped group {} due to exception", courseOfferingId, e);

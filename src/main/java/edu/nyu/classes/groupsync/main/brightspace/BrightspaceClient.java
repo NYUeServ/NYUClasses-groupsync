@@ -429,4 +429,25 @@ public class BrightspaceClient {
                                  uri);
         }
     }
+
+    public Map<String, String> loadEmailAddressMappings() {
+        Map<String, String> result = new HashMap<>();
+
+        DB.transaction
+                (this.darksideDataSource,
+                        "Load email mappings",
+                        (DBConnection db) -> {
+                            db.run("SELECT * from groupsync_email_mapping")
+                                    .executeQuery()
+                                    .each(row -> {
+                                        result.put(row.getString("from_address").trim().toLowerCase(Locale.ROOT),
+                                                   row.getString("to_address").trim().toLowerCase(Locale.ROOT));
+
+                                    });
+
+                            return null;
+                        });
+
+        return result;
+    }
 }
