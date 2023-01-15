@@ -183,9 +183,24 @@ public class BrightspaceClient {
         }
     }
 
+    private String getUsernameById(String userId) throws InterruptedException, ExecutionException {
+        Future<HTTPResponse> request = httpGet(endpoint("lp", String.format("/users/%s", userId)));
+
+        try (HTTPResponse userResponse = request.get()) {
+            JSON userData = userResponse.json();
+
+            return userData.path("UserName").asStringOrDie();
+        }
+    }
+
+
+
     public List<BrightspaceSiteUser> getActiveSiteUsers(String courseOfferingId) {
         try {
             List<BrightspaceSiteUser> result = new ArrayList<>();
+
+            Map<String, Role> usersWithRolesToLookup = new HashMap<>();
+
 
             String bookmark = "";
 
@@ -223,6 +238,11 @@ public class BrightspaceClient {
 
                         if (role != null) {
                             result.add(new BrightspaceSiteUser(email, role));
+
+                            if ("true".equals(config.getString("force_canonical_address", "false")) &&
+                                !email.endsWith("@" + config.getString("canonical_domain_name"))) {
+                                usersWithRolesToLookup.put(userInfo.path("Identifier").asStringOrDie(), role);
+                            }
                         }
                     }
 
@@ -231,6 +251,19 @@ public class BrightspaceClient {
                     } else {
                         break;
                     }
+                }
+            }
+
+            for (Map.Entry<String, Role> entry : usersWithRolesToLookup.entrySet()) {
+                String username = getUsernameById(entry.getKey());
+
+                String canonicalAddress = username + "@" + config.getString("canonical_domain_name");
+
+                LOG.info("Would add canonical address {} for {}", canonicalAddress, entry.getKey());
+
+                if (entry.getKey().equals(config.getString("canonical_blessed_user"))) {
+                    LOG.info("(and actually did it!)");
+                    result.add(new BrightspaceSiteUser(canonicalAddress, entry.getValue()));
                 }
             }
 
