@@ -259,12 +259,8 @@ public class BrightspaceClient {
 
                 String canonicalAddress = username + "@" + config.getString("canonical_domain_name");
 
-                LOG.info("Would add canonical address {} for {}", canonicalAddress, entry.getKey());
-
-                if (entry.getKey().equals(config.getString("canonical_blessed_user"))) {
-                    LOG.info("(and actually did it!)");
-                    result.add(new BrightspaceSiteUser(canonicalAddress, entry.getValue()));
-                }
+                LOG.info("Adding canonical address {} for {}", canonicalAddress, entry.getKey());
+                result.add(new BrightspaceSiteUser(canonicalAddress, entry.getValue()));
             }
 
             return result;
