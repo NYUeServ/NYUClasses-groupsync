@@ -20,8 +20,8 @@ import com.google.api.client.util.store.AbstractDataStoreFactory;
 import com.google.api.client.util.store.DataStore;
 import com.google.api.client.util.store.DataStoreFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
-import com.google.api.services.admin.directory.Directory;
-import com.google.api.services.admin.directory.DirectoryScopes;
+import com.google.api.services.directory.Directory;
+import com.google.api.services.directory.DirectoryScopes;
 import com.google.api.services.groupssettings.Groupssettings;
 import com.google.api.services.groupssettings.GroupssettingsScopes;
 

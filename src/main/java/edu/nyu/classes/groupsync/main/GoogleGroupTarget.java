@@ -24,9 +24,9 @@ import com.google.api.client.googleapis.services.json.AbstractGoogleJsonClientRe
 import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestInitializer;
-import com.google.api.services.admin.directory.Directory;
-import com.google.api.services.admin.directory.model.Member;
-import com.google.api.services.admin.directory.model.Members;
+import com.google.api.services.directory.Directory;
+import com.google.api.services.directory.model.Member;
+import com.google.api.services.directory.model.Members;
 import com.google.api.services.groupssettings.Groupssettings;
 import com.google.api.services.groupssettings.model.Groups;
 
@@ -190,8 +190,8 @@ public class GoogleGroupTarget implements GroupTarget {
                 LimitedBatchRequest batch = new LimitedBatchRequest(directory);
 
                 for (Group g : newGroups) {
-                    com.google.api.services.admin.directory.model.Group googleGroup =
-                            new com.google.api.services.admin.directory.model.Group();
+                    com.google.api.services.directory.model.Group googleGroup =
+                            new com.google.api.services.directory.model.Group();
                     googleGroup.setName(g.getDescription());
                     googleGroup.setDescription(g.getDescription());
                     googleGroup.setEmail(g.getName() + "@" + google.getDomain());
@@ -499,8 +499,8 @@ public class GoogleGroupTarget implements GroupTarget {
 
                 logger.info("Applying group metadata change: {}", d);
 
-                com.google.api.services.admin.directory.model.Group googleGroup =
-                        new com.google.api.services.admin.directory.model.Group();
+                com.google.api.services.directory.model.Group googleGroup =
+                        new com.google.api.services.directory.model.Group();
                 googleGroup.setName(d.group.getDescription());
 
                 if (defaultGroupDescription.equals(groupDescriptions.get(d.group))) {
@@ -617,7 +617,7 @@ public class GoogleGroupTarget implements GroupTarget {
         }
     }
 
-    private class GroupHandler extends JsonBatchCallback<com.google.api.services.admin.directory.model.Group> {
+    private class GroupHandler extends JsonBatchCallback<com.google.api.services.directory.model.Group> {
         private String groupName;
         private List<Group> groups;
 
@@ -626,7 +626,7 @@ public class GoogleGroupTarget implements GroupTarget {
             this.groups = groups;
         }
 
-        public void onSuccess(com.google.api.services.admin.directory.model.Group group, HttpHeaders responseHeaders) {
+        public void onSuccess(com.google.api.services.directory.model.Group group, HttpHeaders responseHeaders) {
             Group g = new Group(emailToGroupName(group.getEmail()), group.getDescription());
 
             groups.add(g);
@@ -712,7 +712,7 @@ public class GoogleGroupTarget implements GroupTarget {
         }
     }
 
-    private class GroupCreateHandler extends JsonBatchCallback<com.google.api.services.admin.directory.model.Group> {
+    private class GroupCreateHandler extends JsonBatchCallback<com.google.api.services.directory.model.Group> {
         private Group group;
         private Consumer<Group> failureHandler;
 
@@ -721,7 +721,7 @@ public class GoogleGroupTarget implements GroupTarget {
             this.failureHandler = failureHandler;
         }
 
-        public void onSuccess(com.google.api.services.admin.directory.model.Group group, HttpHeaders responseHeaders) {
+        public void onSuccess(com.google.api.services.directory.model.Group group, HttpHeaders responseHeaders) {
             logger.info("Successfully created group '{}'", group.getName());
         }
 
@@ -760,7 +760,7 @@ public class GoogleGroupTarget implements GroupTarget {
     //     }
     // }
 
-    private class GroupDiffAppliedHandler extends JsonBatchCallback<com.google.api.services.admin.directory.model.Group> {
+    private class GroupDiffAppliedHandler extends JsonBatchCallback<com.google.api.services.directory.model.Group> {
         private Differences.Difference diff;
         private List<Differences.Difference> appliedDiffs;
 
@@ -769,7 +769,7 @@ public class GoogleGroupTarget implements GroupTarget {
             this.diff = diff;
         }
 
-        public void onSuccess(com.google.api.services.admin.directory.model.Group group, HttpHeaders responseHeaders) {
+        public void onSuccess(com.google.api.services.directory.model.Group group, HttpHeaders responseHeaders) {
             appliedDiffs.add(diff);
         }
 
