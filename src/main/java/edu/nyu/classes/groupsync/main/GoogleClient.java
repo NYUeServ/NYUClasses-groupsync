@@ -1,6 +1,7 @@
 package edu.nyu.classes.groupsync.main;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
@@ -15,6 +16,7 @@ import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.util.store.AbstractDataStoreFactory;
 import com.google.api.client.util.store.DataStore;
@@ -24,6 +26,8 @@ import com.google.api.services.directory.Directory;
 import com.google.api.services.directory.DirectoryScopes;
 import com.google.api.services.groupssettings.Groupssettings;
 import com.google.api.services.groupssettings.GroupssettingsScopes;
+import com.google.auth.http.HttpCredentialsAdapter;
+import com.google.auth.oauth2.GoogleCredentials;
 
 // import org.slf4j.Logger;
 // import org.slf4j.LoggerFactory;
@@ -33,6 +37,7 @@ public class GoogleClient {
 
     private static String APPLICATION = "GroupSyncGoogleClient";
 
+    private String serviceAccountUser;
     private String user;
     private String secret;
     private String credentialsPath;
@@ -40,6 +45,15 @@ public class GoogleClient {
     private HttpTransport httpTransport;
     private GsonFactory jsonFactory;
     private String domain;
+
+    public GoogleClient(String domain, String serviceAccountUser, String credentialsPath) throws Exception {
+        httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+        jsonFactory = GsonFactory.getDefaultInstance();
+
+        this.domain = domain;
+        this.serviceAccountUser = serviceAccountUser;
+        this.credentialsPath = credentialsPath;
+    }
 
     public GoogleClient(String domain, String user, String secret, String credentialsPath) throws Exception {
         httpTransport = GoogleNetHttpTransport.newTrustedTransport();
@@ -65,7 +79,20 @@ public class GoogleClient {
         return domain;
     }
 
-    private Credential getCredential() throws Exception {
+    private HttpRequestInitializer getCredential() throws Exception {
+        if (serviceAccountUser != null) {
+            return getServiceAccountCredential();
+        } else {
+            return getOAuthCredential();
+        }
+    }
+
+    private HttpRequestInitializer getServiceAccountCredential() throws Exception {
+        return new HttpCredentialsAdapter(GoogleCredentials.fromStream(new FileInputStream(this.credentialsPath))
+                                          .createScoped(GoogleClient.requiredScopes()));
+    }
+
+    private HttpRequestInitializer getOAuthCredential() throws Exception {
         File dataStoreLocation = new File(credentialsPath);
         NYUDataStoreFactory store = new NYUDataStoreFactory(dataStoreLocation);
 

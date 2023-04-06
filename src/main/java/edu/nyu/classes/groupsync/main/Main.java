@@ -89,14 +89,26 @@ public class Main {
                         rateLimiters.put(targetConfig.getString("oauth_user"), rateLimiter);
                     }
 
+                    GoogleClient googleClient;
+
+                    if (targetConfig.getString("service_account_user", null) != null) {
+                        googleClient =
+                            new GoogleClient(targetConfig.getString("domain"),
+                                         targetConfig.getString("service_account_user"),
+                                         targetConfig.getString("service_account_credentials_path"));
+                    } else {
+                        googleClient =
+                            new GoogleClient(targetConfig.getString("domain"),
+                                             targetConfig.getString("oauth_user"),
+                                             targetConfig.getString("oauth_secret"),
+                                             targetConfig.getString("credentials_path"));
+                    }
+
                     target = new GoogleGroupTarget(targetConfig.getString("id"),
                             Integer.valueOf(targetConfig.getString("batchSize", "50")),
                             targetConfig.getString("groupDescription", "auto-created group"),
                             rateLimiter,
-                            new GoogleClient(targetConfig.getString("domain"),
-                                    targetConfig.getString("oauth_user"),
-                                    targetConfig.getString("oauth_secret"),
-                                    targetConfig.getString("credentials_path")));
+                            googleClient);
                 } else {
                     throw new RuntimeException("Unknown target type: " + targetConfig.getString("type"));
                 }
