@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -81,12 +82,15 @@ public class Main {
                 GroupTarget target = null;
                 if ("google".equals(targetConfig.getString("type"))) {
                     // Rate limits are applied at the user-level, so we should coordinate them.
-                    RateLimiter rateLimiter = rateLimiters.get(targetConfig.getString("oauth_user"));
+                    String targetAccountKey = Optional.ofNullable(targetConfig.getString("oauth_user", null))
+                        .orElse(targetConfig.getString("service_account_user"));
+
+                    RateLimiter rateLimiter = rateLimiters.get(targetAccountKey);
                     if (rateLimiter == null) {
                         rateLimiter = new RateLimiter(Long.valueOf(targetConfig.getString("queries_per_timestep")),
                                                       Long.valueOf(targetConfig.getString("ratelimit_timestep_ms")));
 
-                        rateLimiters.put(targetConfig.getString("oauth_user"), rateLimiter);
+                        rateLimiters.put(targetAccountKey, rateLimiter);
                     }
 
                     GoogleClient googleClient;
