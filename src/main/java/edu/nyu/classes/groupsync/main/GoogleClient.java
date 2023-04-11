@@ -88,8 +88,10 @@ public class GoogleClient {
     }
 
     private HttpRequestInitializer getServiceAccountCredential() throws Exception {
-        return new HttpCredentialsAdapter(GoogleCredentials.fromStream(new FileInputStream(this.credentialsPath))
-                                          .createScoped(GoogleClient.requiredScopes()));
+        return new HttpCredentialsAdapter(
+                        GoogleCredentials.fromStream(new FileInputStream(this.credentialsPath))
+                        .createScoped(GoogleClient.requiredScopes())
+                        .createDelegated("mt1970@gqa.nyu.edu"));
     }
 
     private HttpRequestInitializer getOAuthCredential() throws Exception {

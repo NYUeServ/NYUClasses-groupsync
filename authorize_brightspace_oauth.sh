@@ -18,5 +18,5 @@ fi
 
 
 
-java -Dorg.slf4j.simpleLogger.defaultLogLevel=error -cp "$myjar:libs/*" edu.nyu.classes.groupsync.brightspace.OAuth ${1+"$@"}
+java -Dorg.slf4j.simpleLogger.defaultLogLevel=error -cp "$myjar:libs/*" edu.nyu.classes.groupsync.main.brightspace.OAuth ${1+"$@"}
 

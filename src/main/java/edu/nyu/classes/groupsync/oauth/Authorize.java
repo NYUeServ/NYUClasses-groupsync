@@ -15,7 +15,7 @@ import edu.nyu.classes.groupsync.main.GoogleClient;
 
 
 public class Authorize {
-    final static String COPY_PASTE_OAUTH_TOKEN = "urn:ietf:wg:oauth:2.0:oob";
+    final static String COPY_PASTE_OAUTH_TOKEN = "https://brightspace-admin.home.nyu.edu/google-oauth-redirect";
 
     public static void main(String[] args) {
         try {
