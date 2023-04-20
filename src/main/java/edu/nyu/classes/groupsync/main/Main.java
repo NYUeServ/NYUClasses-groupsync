@@ -83,7 +83,7 @@ public class Main {
                 if ("google".equals(targetConfig.getString("type"))) {
                     // Rate limits are applied at the user-level, so we should coordinate them.
                     String targetAccountKey = Optional.ofNullable(targetConfig.getString("oauth_user", null))
-                        .orElse(targetConfig.getString("service_account_user"));
+                        .orElseGet(() -> targetConfig.getString("service_account_user"));
 
                     RateLimiter rateLimiter = rateLimiters.get(targetAccountKey);
                     if (rateLimiter == null) {
