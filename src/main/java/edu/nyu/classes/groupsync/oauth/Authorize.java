@@ -17,7 +17,7 @@ import edu.nyu.classes.groupsync.main.GoogleClient;
 public class Authorize {
     public static void main(String[] args) {
         try {
-            if (args.length != 3) {
+            if (args.length != 4) {
                 System.err.println("Usage: Authorize <oauth user> <oauth secret> <redirect uri> <output name>");
                 System.exit(1);
             }
