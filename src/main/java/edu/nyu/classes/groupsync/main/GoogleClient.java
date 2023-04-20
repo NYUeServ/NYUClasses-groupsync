@@ -1,7 +1,6 @@
 package edu.nyu.classes.groupsync.main;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
@@ -26,8 +25,6 @@ import com.google.api.services.directory.Directory;
 import com.google.api.services.directory.DirectoryScopes;
 import com.google.api.services.groupssettings.Groupssettings;
 import com.google.api.services.groupssettings.GroupssettingsScopes;
-import com.google.auth.http.HttpCredentialsAdapter;
-import com.google.auth.oauth2.GoogleCredentials;
 
 // import org.slf4j.Logger;
 // import org.slf4j.LoggerFactory;
@@ -37,7 +34,6 @@ public class GoogleClient {
 
     private static String APPLICATION = "GroupSyncGoogleClient";
 
-    private String serviceAccountUser;
     private String user;
     private String secret;
     private String credentialsPath;
@@ -45,15 +41,6 @@ public class GoogleClient {
     private HttpTransport httpTransport;
     private GsonFactory jsonFactory;
     private String domain;
-
-    public GoogleClient(String domain, String serviceAccountUser, String credentialsPath) throws Exception {
-        httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-        jsonFactory = GsonFactory.getDefaultInstance();
-
-        this.domain = domain;
-        this.serviceAccountUser = serviceAccountUser;
-        this.credentialsPath = credentialsPath;
-    }
 
     public GoogleClient(String domain, String user, String secret, String credentialsPath) throws Exception {
         httpTransport = GoogleNetHttpTransport.newTrustedTransport();
@@ -80,22 +67,6 @@ public class GoogleClient {
     }
 
     private HttpRequestInitializer getCredential() throws Exception {
-        if (serviceAccountUser != null) {
-            return getServiceAccountCredential();
-        } else {
-            return getOAuthCredential();
-        }
-    }
-
-    private HttpRequestInitializer getServiceAccountCredential() throws Exception {
-        return new HttpCredentialsAdapter(
-                        GoogleCredentials.fromStream(new FileInputStream(this.credentialsPath))
-                        .createScoped(GoogleClient.requiredScopes())
-                        .createDelegated("mt1970@gqa.nyu.edu")
-        );
-    }
-
-    private HttpRequestInitializer getOAuthCredential() throws Exception {
         File dataStoreLocation = new File(credentialsPath);
         NYUDataStoreFactory store = new NYUDataStoreFactory(dataStoreLocation);
 
