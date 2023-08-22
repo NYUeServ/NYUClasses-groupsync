@@ -33,7 +33,7 @@ class RateLimiter {
             throw new RuntimeException("Can't execute that many concurrent queries: " + count);
         }
 
-        while ((queriesInLastTimestep() + count) >= queriesPerTimestep) {
+        while ((queriesInLastTimestep() + count) > queriesPerTimestep) {
             logger.warn("Waiting for rate limiter to allow another {} queries", count);
             try {
                 Thread.sleep(1000);
