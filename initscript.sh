@@ -45,7 +45,7 @@ stop() {
     pid=$(groupsync_pid)
     if [ -n "$pid" ]
     then
-        echo "Stoping Groupsync"
+        echo "Stopping Groupsync"
         kill "$pid"
     else
         echo "Groupsync is not running"
