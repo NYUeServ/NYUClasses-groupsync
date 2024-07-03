@@ -1,0 +1,19 @@
+[Unit]
+Description=Groupsync
+After=network-online.target
+
+[Service]
+Type=simple
+User=sakai
+Group=sakai
+ExecStart=/opt/sakaicle/home/groupsync/run.sh
+ExecStop=pkill -f groupsync-service=true
+
+# We'll auto-restart on release, so don't worry.
+Restart=no
+
+# Allow the `stop` action to work even if we've manually stopped and restarted the JVM since systemd started it.
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
