@@ -4,7 +4,7 @@ if [ ! "$ENVIRONMENT_CLEAN" ]; then
     exec env -i ENVIRONMENT_CLEAN=1 $0 ${1+"$@"}
 fi
 
-export PATH=/home/sakai/jdk-current/bin:$PATH
+export PATH=/opt/lms-jdk/bin:$PATH
 
 cd "`dirname "$0"`"
 
